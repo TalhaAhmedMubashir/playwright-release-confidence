@@ -5,3 +5,5 @@ timings.json
 /exploration/
 .env
 .env.*
+.auth/
+blob-report/

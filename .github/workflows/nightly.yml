@@ -1,0 +1,132 @@
+name: Nightly
+
+# The full suite every night: the API, the UI in Chromium, Firefox and WebKit, and the accessibility
+# checks, each against a fresh copy of the app; then one merged report and the release gate. This
+# workflow's latest result on main is what the portfolio site's status panel shows. The report is
+# published to GitHub Pages only once the repository variable PUBLISH_REPORT is true (at launch).
+# A pull request labelled "full run" gets the same run on each push, before it merges.
+
+on:
+  schedule:
+    - cron: '37 1 * * *'
+  workflow_dispatch:
+  pull_request:
+    types: [labeled, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Full run (${{ matrix.browser }})
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'full run')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Install the browsers (Chromium signs in for every run)
+        run: npx playwright install --with-deps chromium ${{ matrix.browser }}
+
+      - name: Start the app
+        run: node scripts/start-app.mjs
+
+      - name: Run the suite
+        # The API and accessibility checks don't depend on the browser, so they run once, with Chromium.
+        run: npx playwright test --project=setup --project=${{ matrix.browser }} ${{ matrix.browser == 'chromium' && '--project=api --project=a11y' || '' }}
+        env:
+          ALLOW_SITE_SETTINGS_CHANGES: '1'
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.browser }}.zip
+
+      - name: Show the app's logs
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+
+      - name: Keep this run's results for the merged report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: blob-${{ matrix.browser }}
+          path: blob-report/
+          retention-days: 3
+
+  report:
+    name: Merged report and the release gate
+    needs: test
+    if: ${{ !cancelled() && needs.test.result != 'skipped' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: blob-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge the three runs into one report
+        run: |
+          npx playwright merge-reports --reporter html ./all-blob-reports
+          PLAYWRIGHT_JSON_OUTPUT_NAME=results.json npx playwright merge-reports --reporter json ./all-blob-reports
+
+      - name: Release gate
+        run: node scripts/gate.ts results.json --require "API,Home page,Contact form,Booking,Admin area,Accessibility"
+
+      - name: Keep the report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Hand the report to the publish job
+        if: ${{ !cancelled() && vars.PUBLISH_REPORT == 'true' }}
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: playwright-report/
+
+  publish:
+    name: Publish the report to GitHub Pages
+    needs: report
+    if: ${{ !cancelled() && vars.PUBLISH_REPORT == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
