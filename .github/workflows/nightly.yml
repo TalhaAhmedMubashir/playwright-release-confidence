@@ -4,22 +4,26 @@ name: Nightly
 # checks, each against a fresh copy of the app; then one merged report and the release gate. This
 # workflow's latest result on main is what the portfolio site's status panel shows. The report is
 # published to GitHub Pages only once the repository variable PUBLISH_REPORT is true (at launch).
+# A pull request labelled "full run" gets the same run on each push, before it merges.
 
 on:
   schedule:
     - cron: '37 1 * * *'
   workflow_dispatch:
+  pull_request:
+    types: [labeled, synchronize]
 
 permissions:
   contents: read
 
 concurrency:
-  group: nightly
-  cancel-in-progress: false
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
     name: Full run (${{ matrix.browser }})
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'full run')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -67,7 +71,7 @@ jobs:
   report:
     name: Merged report and the release gate
     needs: test
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.test.result != 'skipped' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

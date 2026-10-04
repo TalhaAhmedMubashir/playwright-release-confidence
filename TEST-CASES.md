@@ -1,12 +1,11 @@
 # Test cases
 
-**Status: draft, waiting for the owner's approval.** No test code is written until this list is
-approved.
+**Status: approved by the owner on 2026-10-04, as written.** The owner also allowed signing in on
+our own copy that day; the admin cases and the two API cases marked *added* come from that
+exploration and follow the outline the owner approved.
 
 Everything below was observed in Restful-Booker-Platform (RBP) 2.2, running on our own copy in
 CI, on 2026-10-04. The records are in [docs/exploration/2026-10-04](docs/exploration/2026-10-04).
-Only the visitor side was explored; the admin area needs a sign-in and is listed under
-"Not covered yet".
 
 ## How to read this
 
@@ -86,6 +85,8 @@ practice, so some may be deliberate. The suite reports them either way.
 | API-07 | A new booking's dates appear in `GET /booking/unavailable` and `GET /report/room/{id}` | PR | `@api` |
 | API-08 | Every endpoint that changes data or reads private data refuses a visitor with 401 or 403. Seen: list bookings, read a booking, booking summary, the all-rooms report, create a room, change branding. Expected from the API description: change or delete a room, delete a booking, mark a message read, delete a message. All refusals use one status and one answer shape (F8) | PR | `@security` `@known-bug` |
 | API-09 | Contact messages can't be read without signing in (F1) | PR | `@security` `@known-bug` |
+| API-10 | An error answer doesn't reveal the app's internal code: class names, exception types. *Added*; to confirm (the branding API's refusal named Java classes while exploring) | PR | `@security` |
+| API-11 | Creating a booking answers as the API description says: status 200 and `{bookingid, booking}`. *Added*; to confirm (exploring saw 201 and a flat booking) | PR | `@api` |
 
 ## Accessibility
 
@@ -93,6 +94,7 @@ practice, so some may be deliberate. The suite reports them either way.
 |---|---|---|---|
 | A11Y-01 | Automated scan (axe, WCAG 2.2 AA) of the home page, a booking page, the cookie and privacy pages, the 404 page, the form-error states and both confirmations. Known problems (F4, F5) are listed as known bugs; anything new fails | Nightly | `@a11y` |
 | A11Y-02 | A room can be booked with the keyboard alone (to confirm: the calendar) | Nightly | `@a11y` |
+| A11Y-03 | Automated scan (axe, WCAG 2.2 AA) of the admin pages: rooms, report, branding, messages. *Added* | Nightly | `@a11y` `@admin` |
 
 ## Suite-level checks
 
@@ -106,25 +108,27 @@ From PLAN.md, "Flagship scope".
 | SIG-03 | The numbers in the README (test counts) are generated, and CI fails when they are out of date | PR |
 | LOAD-01 | Optional: a short k6 smoke test of the room and booking APIs, written from scratch | Nightly |
 
-## Not covered yet: the admin area
+## Admin area (*added*)
 
-The admin area (sign-in, rooms, bookings, messages, branding, report) needs the app's admin
-sign-in, which was left out of this exploration. Once the owner allows it, the same exploration
-runs signed in, on our copy only, and this list gains:
+Explored signed in on our own copy, with the app's published default login (owner's permission,
+2026-10-04). Records: the "Explore the app" workflow's admin passes (`explore/admin.mjs`,
+`explore/admin-flows.mjs`).
 
-- sign-in and sign-out, and the plan's shared setup (saved sign-in sessions, data created through
-  the API, clean-up by name);
-- rooms: create, edit and delete;
-- bookings and messages as the owner sees them: read, edit, delete, mark as read;
-- branding: a change to the public site, guarded so the test runs only with an explicit flag and
-  restores the original afterwards;
-- the report of all rooms.
+| ID | Check | Runs | Tags |
+|---|---|---|---|
+| ADM-01 | The published login opens the rooms page, and Logout signs out | PR | `@smoke` |
+| ADM-02 | A wrong password is refused with "Invalid credentials" | Nightly | `@admin` |
+| ADM-03 | A room made in the admin area appears on the home page with its type and price; deleting it removes it | PR | `@smoke` |
+| ADM-04 | A new price set in the admin area shows on the booking page | Nightly | `@admin` |
+| ADM-05 | Creating a room with nothing filled in says what is missing (to confirm: no message while exploring) | Nightly | `@admin` |
+| ADM-06 | A visitor's message reaches the inbox; opening it shows the sender and marks it read; the dialog is named after the message (to confirm: it was named "onRequestClose Example") | Nightly | `@admin` |
+| ADM-07 | A new B&B name shows on the public site, and the original comes back afterwards, behind the guard (to confirm: the save was refused while exploring) | Nightly | `@guard` |
+| ADM-08 | A visitor's booking shows in the admin report with the guest's name and room | Nightly | `@admin` |
+| ADM-09 | Signing out ends the session: the old sign-in stops working (to confirm) | Nightly | `@security` |
+| ADM-10 | The sign-in cookie can't be read by the page's scripts (to confirm: it isn't HttpOnly) | Nightly | `@security` |
 
-## For the owner to decide
+## Decisions
 
-1. Approve this list, or strike and add cases.
-2. Allow the exploration to sign in as admin, on our own copy only, with the app's published
-   default login?
-
-Decided: F1 to F9 are tracked as issues #1 to #9 in this repo (owner, 2026-10-04). Nothing has been
+- The owner approved this list as written, and allowed signing in on our own copy (2026-10-04).
+- F1 to F9 are tracked as issues #1 to #9 in this repo (owner, 2026-10-04). Nothing has been
 reported to RBP's maintainer; that would be public, so it waits for the owner.

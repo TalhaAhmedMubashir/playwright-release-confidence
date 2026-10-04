@@ -27,14 +27,17 @@ export class HomePage {
 
   goto = () => this.page.goto('/');
 
+  private bookHref = (roomId: number) => `a[href^="/reservation/${roomId}?"]`;
+
   /** A room's "Book now" link, which carries the room's id. */
-  bookLink = (roomId: number) => this.rooms.locator(`a[href^="/reservation/${roomId}?"]`);
+  bookLink = (roomId: number) => this.rooms.locator(this.bookHref(roomId));
 
   /** A room's card: the smallest block holding both its heading and its "Book now" link. */
   roomCard = (roomId: number) =>
     this.rooms
       .locator('div')
-      .filter({ has: this.bookLink(roomId) })
+      // Filters look inside each block, so their locators start from the page, not from #rooms.
+      .filter({ has: this.page.locator(this.bookHref(roomId)) })
       .filter({ has: this.page.getByRole('heading', { level: 5 }) })
       .last();
 
