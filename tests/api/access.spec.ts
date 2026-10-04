@@ -42,7 +42,7 @@ test.fail('API-08 every refusal answers with the same status and the same shape'
   expect(new Set(await Promise.all(answers.map(shapeOf)))).toHaveProperty('size', 1);
 });
 
-test("API-10 an error answer doesn't reveal the app's internal code", { tag: ['@api', '@security'] }, async ({ admin }) => {
+test.fail("API-10 an error answer doesn't reveal the app's internal code", { tag: ['@api', '@security', '@known-bug'], annotation: issue(12) }, async ({ admin }) => {
   await changingSiteSettings(admin, async () => {
     const current = await read(await admin.branding(), Branding);
     const response = await admin.updateBranding({ ...current, logoUrl: 'not a web address' });

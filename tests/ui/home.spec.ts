@@ -1,7 +1,7 @@
 import { read } from '../../src/api/client.ts';
-import { Branding, Rooms } from '../../src/api/schemas.ts';
+import { Branding, Room } from '../../src/api/schemas.ts';
 import { issue } from '../../src/config.ts';
-import { day, GUEST, stay } from '../../src/data.ts';
+import { day, farStay, GUEST } from '../../src/data.ts';
 import { expect, test } from '../../src/fixtures.ts';
 import { HomePage } from '../../src/pages/home.ts';
 
@@ -14,20 +14,32 @@ test("UI-01 the home page shows the B&B's name, description and contact details"
   await expect(page.getByText(branding.contact.email).first()).toBeVisible();
 });
 
-test('UI-02 every room the page receives is shown with its type, price and features, and a link to book it for tonight', { tag: ['@ui', '@smoke'] }, async ({ page }) => {
+test('UI-02 every room shown has its type, price and features from the room service, and a link to book it for tonight', { tag: ['@ui', '@smoke'] }, async ({ page, visitor }) => {
   const home = new HomePage(page);
-  // Compared with the answer the page itself received, so rooms other tests add or remove meanwhile don't matter.
-  const answer = page.waitForResponse((response) => new URL(response.url()).pathname === '/api/room' && response.request().method() === 'GET');
   await home.goto();
-  const { rooms } = Rooms.parse(await (await answer).json());
-  expect(rooms.length).toBeGreaterThan(0);
-  for (const room of rooms) {
-    const card = home.roomCard(room.roomid);
+  for (const id of await home.shownRoomIds()) {
+    const room = await read(await visitor.room(id), Room);
+    const card = home.roomCard(id);
     await expect(card.getByRole('heading', { level: 5 })).toHaveText(room.type);
     await expect(card).toContainText(`£${room.roomPrice} per night`);
     for (const feature of room.features) await expect(card).toContainText(feature);
-    await expect(home.bookLink(room.roomid)).toHaveAttribute('href', `/reservation/${room.roomid}?checkin=${day(0)}&checkout=${day(1)}`);
+    await expect(home.bookLink(id)).toHaveAttribute('href', `/reservation/${id}?checkin=${day(0)}&checkout=${day(1)}`);
   }
+});
+
+test.fail("UI-02 each room's photo is described as its own room", { tag: ['@ui', '@a11y', '@known-bug'], annotation: issue(5) }, async ({ page, visitor }) => {
+  const home = new HomePage(page);
+  await home.goto();
+  for (const id of await home.shownRoomIds()) {
+    const room = await read(await visitor.room(id), Room);
+    await expect(home.roomCard(id).getByRole('img'), `room ${id}`).toHaveAccessibleName(new RegExp(room.type));
+  }
+});
+
+test.fail('UI-17 a newly added room appears on the home page', { tag: ['@ui', '@known-bug'], annotation: issue(13) }, async ({ page, room }) => {
+  const home = new HomePage(page);
+  await home.goto();
+  await expect(home.bookLink(room.roomid)).toBeVisible();
 });
 
 const SECTIONS = [
@@ -65,16 +77,17 @@ test('UI-05 at phone width the menu opens from its button and shows the same lin
   }
 });
 
-test("UI-06 the availability search doesn't offer a room that is booked for the chosen dates", { tag: '@ui' }, async ({ page, visitor, room }) => {
-  const dates = stay();
-  expect((await visitor.createBooking({ roomid: room.roomid, ...GUEST, bookingdates: dates })).status()).toBe(201);
+test("UI-06 the availability search doesn't offer a room that is booked for the chosen dates", { tag: '@ui' }, async ({ page, visitor }) => {
   const home = new HomePage(page);
   await home.goto();
-  await expect(home.bookLink(room.roomid), 'offered before the search').toBeVisible();
+  // One of the rooms the page shows (a room added later isn't shown: issue #13), on dates years ahead.
+  const roomId = (await home.shownRoomIds())[0] ?? 0;
+  const dates = farStay();
+  expect((await visitor.createBooking({ roomid: roomId, ...GUEST, bookingdates: dates })).status()).toBe(201);
   const searched = page.waitForResponse((response) => response.url().includes(`/api/room?checkin=${dates.checkin}`));
   await home.searchAvailability(dates.checkin, dates.checkout);
   await searched;
-  await expect(home.bookLink(room.roomid), 'offered after searching its booked dates').toHaveCount(0);
+  await expect(home.bookLink(roomId), 'offered after searching its booked dates').toHaveCount(0);
 });
 
 test.fail("UI-15 the footer's quick links go to their pages or sections", { tag: ['@ui', '@known-bug'], annotation: issue(6) }, async ({ page }) => {

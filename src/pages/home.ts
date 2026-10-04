@@ -41,6 +41,14 @@ export class HomePage {
       .filter({ has: this.page.getByRole('heading', { level: 5 }) })
       .last();
 
+  /** The ids of the rooms the page shows, read from their "Book now" links. */
+  async shownRoomIds(): Promise<number[]> {
+    const links = this.rooms.locator('a[href^="/reservation/"]');
+    await links.first().waitFor();
+    const hrefs = await links.evaluateAll((elements) => elements.map((element) => element.getAttribute('href') ?? ''));
+    return hrefs.map((href) => Number(/\/reservation\/(\d+)/.exec(href)?.[1]));
+  }
+
   /** Searches for rooms free between two dates (yyyy-mm-dd); the fields take dd/mm/yyyy. */
   async searchAvailability(checkin: string, checkout: string): Promise<void> {
     const ukDate = (iso: string) => iso.split('-').reverse().join('/');

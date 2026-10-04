@@ -1,5 +1,6 @@
 import { type NewBooking, read } from '../../src/api/client.ts';
 import { BookingErrors, CreatedBooking, DocumentedCreatedBooking, Report, Unavailable } from '../../src/api/schemas.ts';
+import { issue } from '../../src/config.ts';
 import { day, GUEST, ofLength, stay } from '../../src/data.ts';
 import { expect, test } from '../../src/fixtures.ts';
 
@@ -79,7 +80,7 @@ test("API-07 a new booking's dates show as taken in the availability and report 
   expect((await read(await visitor.report(room.roomid), Report)).report).toContainEqual({ start: dates.checkin, end: dates.checkout, title: 'Unavailable' });
 });
 
-test('API-11 creating a booking answers as the API description says', { tag: '@api' }, async ({ visitor, room }) => {
+test.fail('API-11 creating a booking answers as the API description says', { tag: ['@api', '@known-bug'], annotation: issue(11) }, async ({ visitor, room }) => {
   const response = await visitor.createBooking(booking(room.roomid));
   expect(response.status(), 'the status the description gives').toBe(200);
   expect((await read(response, DocumentedCreatedBooking)).booking.roomid).toBe(room.roomid);

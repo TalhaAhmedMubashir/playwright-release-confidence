@@ -14,6 +14,9 @@ export const day = (n: number) => new Date(Date.now() + n * 86_400_000).toISOStr
 /** A stay of the given length, a month from now. Tests that book use their own room, so dates never clash. */
 export const stay = (nights = 2, from = 30) => ({ checkin: day(from), checkout: day(from + nights) });
 
+/** A stay starting on a random day years ahead, for the rare test that must book one of the app's own rooms. */
+export const farStay = (nights = 2) => stay(nights, 400 + Math.floor(Math.random() * 3000));
+
 export const GUEST = { firstname: 'Test', lastname: 'Visitor', email: 'visitor@example.com', phone: '01234567890' };
 
 export const MESSAGE = {

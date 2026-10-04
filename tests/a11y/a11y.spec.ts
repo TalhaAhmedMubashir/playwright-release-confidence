@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Locator, Page } from '@playwright/test';
-import { ADMIN_STATE } from '../../src/config.ts';
+import { ADMIN_STATE, issue } from '../../src/config.ts';
 import { GUEST, MESSAGE, stay } from '../../src/data.ts';
 import { expect, test } from '../../src/fixtures.ts';
 import { AdminPage } from '../../src/pages/admin.ts';
@@ -10,10 +10,23 @@ import { ReservationPage } from '../../src/pages/reservation.ts';
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 /**
- * Problems already known, each tracked as an issue: an axe rule and the elements it flagged. Anything
- * else the scan finds fails the test. Filled in from the scans' own findings, never guessed.
+ * Problems already known, each tracked as an issue: the axe rule, the findings it covers (a pattern
+ * over "where: rule element"), and the part of the app they belong to. Filled in from the scans'
+ * own findings (pull request #10), never guessed. Anything else fails the scan; so does a known
+ * problem that is no longer found, so its issue gets closed.
  */
-const KNOWN: { rule: string; target: RegExp; issue: number }[] = [];
+const KNOWN: { rule: string; finding: RegExp; scope: 'visitor' | 'admin'; issue: number }[] = [
+  // #4: the home page's date fields and message box have no name, and neither do the footer's icon links.
+  { rule: 'label', finding: /^home[^:]*: label (input\[value=|#description$)/, scope: 'visitor', issue: 4 },
+  { rule: 'link-name', finding: /: link-name .*btn-outline-light/, scope: 'visitor', issue: 4 },
+  // #19: the footer's links and the booking page's breadcrumb have too little contrast.
+  { rule: 'color-contrast', finding: /: color-contrast (small > a|a\[href\$=|\.text-decoration-none\[href=|\.breadcrumb-item)/, scope: 'visitor', issue: 19 },
+  // #19: so do the admin area's buttons and the report calendar's days outside the month.
+  { rule: 'color-contrast', finding: /^admin [a-z]+: color-contrast (\.btn|\.rbc-off-range)/, scope: 'admin', issue: 19 },
+  // #20: admin form fields with no name.
+  { rule: 'label', finding: /^admin (rooms: label #room(Name|Price)|branding: label #(description|directions))$/, scope: 'admin', issue: 20 },
+  { rule: 'select-name', finding: /^admin rooms: select-name #(type|accessible)$/, scope: 'admin', issue: 20 },
+];
 
 /** Every WCAG 2.2 AA problem axe finds on the page as it is now, as "where: rule element". */
 async function scan(page: Page, where: string): Promise<string[]> {
@@ -21,7 +34,11 @@ async function scan(page: Page, where: string): Promise<string[]> {
   return violations.flatMap((violation) => violation.nodes.map((node) => `${where}: ${violation.id} ${node.target.join(' ')}`));
 }
 
-const isKnown = (finding: string) => KNOWN.some(({ rule, target }) => finding.includes(`: ${rule} `) && target.test(finding));
+const covers = (known: (typeof KNOWN)[number], finding: string) => finding.includes(`: ${known.rule} `) && known.finding.test(finding);
+const isKnown = (finding: string) => KNOWN.some((known) => covers(known, finding));
+/** Known problems of this part of the app that the scans no longer find. */
+const noLongerFound = (scope: 'visitor' | 'admin', found: string[]) =>
+  KNOWN.filter((known) => known.scope === scope && !found.some((finding) => covers(known, finding))).map((known) => `#${known.issue} ${known.rule} ${known.finding}`);
 
 /** Visits every visitor page and state worth scanning, and answers what the scans found. */
 async function scanVisitorPages(page: Page, roomId: number): Promise<string[]> {
@@ -57,15 +74,16 @@ async function scanVisitorPages(page: Page, roomId: number): Promise<string[]> {
   return found;
 }
 
-test('A11Y-01 the visitor pages have no accessibility problem beyond the known ones', { tag: '@a11y' }, async ({ page, room }) => {
+test('A11Y-01 the visitor pages have no accessibility problem beyond the known ones', { tag: '@a11y', annotation: [issue(4), issue(19)] }, async ({ page, room }) => {
   const found = await scanVisitorPages(page, room.roomid);
-  expect(found.filter((finding) => !isKnown(finding))).toEqual([]);
+  expect.soft(found.filter((finding) => !isKnown(finding)), 'problems not known yet').toEqual([]);
+  expect(noLongerFound('visitor', found), 'known problems no longer found: close their issues and remove them from KNOWN').toEqual([]);
 });
 
 test.describe('signed in', () => {
   test.use({ storageState: ADMIN_STATE });
 
-  test('A11Y-03 the admin pages have no accessibility problem beyond the known ones', { tag: ['@a11y', '@admin'] }, async ({ page }) => {
+  test('A11Y-03 the admin pages have no accessibility problem beyond the known ones', { tag: ['@a11y', '@admin'], annotation: [issue(19), issue(20)] }, async ({ page }) => {
     const admin = new AdminPage(page);
     const found: string[] = [];
     for (const [where, open] of [
@@ -78,7 +96,8 @@ test.describe('signed in', () => {
       await expect(admin.logout).toBeVisible();
       found.push(...(await scan(page, where)));
     }
-    expect(found.filter((finding) => !isKnown(finding))).toEqual([]);
+    expect.soft(found.filter((finding) => !isKnown(finding)), 'problems not known yet').toEqual([]);
+    expect(noLongerFound('admin', found), 'known problems no longer found: close their issues and remove them from KNOWN').toEqual([]);
   });
 });
 

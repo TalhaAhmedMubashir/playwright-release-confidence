@@ -1,3 +1,4 @@
+import { issue } from '../../src/config.ts';
 import { MESSAGE } from '../../src/data.ts';
 import { expect, test } from '../../src/fixtures.ts';
 import { HomePage } from '../../src/pages/home.ts';
@@ -29,7 +30,7 @@ test('UI-08 sending the empty form lists a problem for every field', { tag: '@ui
   for (const error of EMPTY_FORM_ERRORS) await expect(page.getByText(error, { exact: true })).toBeVisible();
 });
 
-test("UI-09 the form's errors are announced to screen-reader users", { tag: ['@ui', '@a11y'] }, async ({ page }) => {
+test.fail("UI-09 the form's errors are announced to screen-reader users", { tag: ['@ui', '@a11y', '@known-bug'], annotation: issue(14) }, async ({ page }) => {
   const home = new HomePage(page);
   await home.goto();
   await home.contactForm.getByRole('button', { name: 'Submit' }).click();

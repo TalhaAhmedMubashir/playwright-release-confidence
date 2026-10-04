@@ -1,6 +1,6 @@
 import { read } from '../../src/api/client.ts';
 import { Messages } from '../../src/api/schemas.ts';
-import { ADMIN, ADMIN_STATE, BASE_URL } from '../../src/config.ts';
+import { ADMIN, ADMIN_STATE, BASE_URL, issue } from '../../src/config.ts';
 import { GUEST, MESSAGE, ROOM_PREFIX, stay, uniqueName } from '../../src/data.ts';
 import { deleteRoomsNamed, expect, findRoom, test } from '../../src/fixtures.ts';
 import { changingSiteSettings } from '../../src/guard.ts';
@@ -42,7 +42,8 @@ test.describe('signing in and out', () => {
 
     // Checked from a separate client, so only the old token is sent.
     const api = await playwright.request.newContext({ baseURL: BASE_URL });
-    const withOldToken = () => api.get('/api/booking/', { headers: { cookie: `token=${token}` }, failOnStatusCode: false });
+    // The all-rooms report needs a sign-in; the admin area itself reads it (seen while exploring).
+    const withOldToken = () => api.get('/api/report', { headers: { cookie: `token=${token}` }, failOnStatusCode: false });
     expect((await withOldToken()).status(), 'before signing out').toBe(200);
     await admin.logout.click();
     await expect(page).toHaveURL(`${BASE_URL}/`);
@@ -51,7 +52,7 @@ test.describe('signing in and out', () => {
     await api.dispose();
   });
 
-  test("ADM-10 the sign-in cookie can't be read by the page's scripts", { tag: ['@ui', '@admin', '@security'] }, async ({ page, context }) => {
+  test.fail("ADM-10 the sign-in cookie can't be read by the page's scripts", { tag: ['@ui', '@admin', '@security', '@known-bug'], annotation: issue(18) }, async ({ page, context }) => {
     const admin = new AdminPage(page);
     await admin.gotoSignIn();
     await admin.signIn(ADMIN);
@@ -63,25 +64,23 @@ test.describe('signing in and out', () => {
 test.describe('the admin area', () => {
   test.use({ storageState: ADMIN_STATE });
 
-  test('ADM-03 a room made in the admin area appears on the home page, and deleting it removes it', { tag: ['@ui', '@admin', '@smoke'] }, async ({ page, admin }) => {
+  test('ADM-03 a room made in the admin area is listed with its details, and deleting it removes it', { tag: ['@ui', '@admin', '@smoke'] }, async ({ page, admin }) => {
     const name = uniqueName(ROOM_PREFIX);
     const adminPage = new AdminPage(page);
-    const home = new HomePage(page);
     try {
       await adminPage.gotoRooms();
       await adminPage.createRoom({ roomName: name, type: 'Family', accessible: true, roomPrice: 199, features: ['WiFi', 'Views'] });
-      await expect(adminPage.roomRows.filter({ hasText: name })).toContainText('Family');
+      const row = adminPage.roomRows.filter({ hasText: name });
+      await expect(row).toContainText('Family');
+      await expect(row).toContainText('199');
+      await expect(row).toContainText('WiFi, Views');
+      // Whether visitors see it on the home page is UI-17 (issue #13).
       const room = await findRoom(admin, name);
+      expect(room).toMatchObject({ type: 'Family', accessible: true, roomPrice: 199, features: ['WiFi', 'Views'] });
 
-      await home.goto();
-      await expect(home.roomCard(room.roomid).getByRole('heading', { level: 5 })).toHaveText('Family');
-      await expect(home.roomCard(room.roomid)).toContainText('£199 per night');
-
-      await adminPage.gotoRooms();
       await adminPage.deleteRoom(room.roomid);
       await expect(adminPage.roomRow(room.roomid)).toHaveCount(0);
-      await home.goto();
-      await expect(home.bookLink(room.roomid)).toHaveCount(0);
+      expect((await admin.room(room.roomid)).ok(), 'the deleted room, from the API').toBe(false);
     } finally {
       await deleteRoomsNamed(admin, name);
     }
@@ -96,7 +95,7 @@ test.describe('the admin area', () => {
     await expect(reservation.summary).toContainText(`£${price} x 1 night`);
   });
 
-  test('ADM-05 creating a room with nothing filled in says what is missing', { tag: ['@ui', '@admin'] }, async ({ page }) => {
+  test.fail('ADM-05 creating a room with nothing filled in says what is missing', { tag: ['@ui', '@admin', '@known-bug'], annotation: issue(15) }, async ({ page }) => {
     const admin = new AdminPage(page);
     await admin.gotoRooms();
     await page.getByRole('button', { name: 'Create' }).click();
@@ -118,7 +117,7 @@ test.describe('the admin area', () => {
       .toBe(true);
   });
 
-  test('ADM-06 the message dialog is named after the message', { tag: ['@ui', '@admin', '@a11y'] }, async ({ page, visitor }) => {
+  test.fail('ADM-06 the message dialog is named after the message', { tag: ['@ui', '@admin', '@a11y', '@known-bug'], annotation: issue(16) }, async ({ page, visitor }) => {
     const subject = `Question ${uniqueName('')}`;
     expect((await visitor.createMessage({ ...MESSAGE, subject })).status()).toBe(200);
     const admin = new AdminPage(page);
@@ -127,7 +126,7 @@ test.describe('the admin area', () => {
     await expect(admin.messageDialog).toHaveAccessibleName(new RegExp(subject));
   });
 
-  test('ADM-07 a new B&B name shows on the public site, and the original comes back afterwards', { tag: ['@ui', '@admin', '@guard'] }, async ({ page, admin }) => {
+  test.fail('ADM-07 a new B&B name shows on the public site, and the original comes back afterwards', { tag: ['@ui', '@admin', '@guard', '@known-bug'], annotation: issue(17) }, async ({ page, admin }) => {
     await changingSiteSettings(admin, async () => {
       const adminPage = new AdminPage(page);
       await adminPage.gotoBranding();
