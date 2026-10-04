@@ -33,8 +33,11 @@ jobs:
       - name: Start the app
         run: node scripts/start-app.mjs
 
-      - name: Explore as a visitor
+      - name: Record every page a visitor can reach
         run: node explore/visitor.mjs
+
+      - name: Try what a visitor can do
+        run: node explore/flows.mjs
 
       - name: Show the app's logs
         if: failure()

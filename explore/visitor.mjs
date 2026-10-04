@@ -29,6 +29,7 @@ const external = new Set();
 const queue = ['/'];
 const seen = new Set(queue);
 
+/** Records one page at both widths and queues the pages it links to. */
 async function record(path, consoleErrors, failedRequests) {
   const response = await page.goto(path, { waitUntil: 'networkidle' });
   const name = slug(path);
