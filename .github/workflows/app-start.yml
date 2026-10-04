@@ -1,11 +1,15 @@
 name: App start-up trial
 
 # Times how long the app takes to start on a fresh CI machine, 3 times in parallel, then applies
-# the rule in DECISIONS.md (decision 1).
+# the rule in DECISIONS.md (decision 1). A new app version or start script is a new decision.
 
 on:
   push:
     branches: [main]
+    paths:
+      - docker-compose.yml
+      - scripts/start-app.mjs
+      - scripts/trial-verdict.mjs
   workflow_dispatch:
 
 permissions:

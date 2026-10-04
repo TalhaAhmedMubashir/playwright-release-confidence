@@ -24,4 +24,23 @@ front end. Otherwise, fall back to a small app of our own.
 `.github/workflows/app-start.yml`, each on a fresh GitHub-hosted machine. `scripts/trial-verdict.mjs`
 applies the rule.
 
-**Result:** pending.
+**Result (2026-10-04): keep RBP.** All 3 runs ended with a working app; the slowest took 85.3 s,
+under half the limit. Measured in
+[run 37192478114](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/actions/runs/37192478114):
+
+| Run | Pull the images (s) | Start until every service answers (s) | Total (s) |
+|---|---|---|---|
+| 1 | 36.2 | 37.1 | 73.3 |
+| 2 | 30.7 | 54.6 | 85.3 |
+| 3 | 23.6 | 58.2 | 81.8 |
+
+- Machines: GitHub-hosted Ubuntu 24.04 with 2 CPUs and 8 GB, the size given to private repos.
+  Public repos get larger machines, per GitHub's documentation (not measured here).
+- The front end answered within 5 s; the six Java services took 28 to 58 s, starting together on
+  2 CPUs. Start-up, not the download, is the larger and more variable part.
+- No Docker Hub rate limit was hit, without signing in to Docker Hub.
+
+**What it costs:** about 1.5 minutes of start-up in every CI job that needs the app.
+
+**When to look again:** a new app version is a new decision. The trial re-runs whenever
+`docker-compose.yml` or the start script changes, and its last job applies the same rule.

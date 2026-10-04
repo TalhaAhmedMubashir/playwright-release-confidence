@@ -1,0 +1,14 @@
+{
+  "name": "playwright-release-confidence",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "app:start": "node scripts/start-app.mjs",
+    "app:stop": "docker compose down",
+    "explore": "node explore/visitor.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}
