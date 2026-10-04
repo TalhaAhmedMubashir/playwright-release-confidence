@@ -1,0 +1,7 @@
+version: 2
+updates:
+  # The app's images stay pinned on purpose: a new app version is a decision, not a routine update.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

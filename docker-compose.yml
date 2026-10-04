@@ -1,0 +1,42 @@
+# Restful-Booker-Platform (RBP) release 2.2: the app these tests run against.
+# Source and licence (GPL-3.0): https://github.com/mwinteringham/restful-booker-platform
+# Images are pinned by digest, so every run tests exactly the same build.
+# Ports listen on this machine only (127.0.0.1); the app has a well-known admin login.
+name: rbp
+
+x-no-telemetry: &no-telemetry
+  # RBP's production settings send traces to Honeycomb. Tests must not send data to a third party.
+  HONEYCOMB_BEELINE_ENABLED: "false"
+
+services:
+  rbp-booking:
+    image: mwinteringham/restfulbookerplatform_booking:2.2@sha256:64bbebecf378e90da71771b7c2499c3e62ca24717abd6f07fb8300d2c4f54670
+    environment: *no-telemetry
+    ports: ["127.0.0.1:3000:3000"]
+
+  rbp-room:
+    image: mwinteringham/restfulbookerplatform_room:2.2@sha256:cad77c0afbefb86ce9814ac1af89d10de212bd79fcb3a6e5b8fe41943d67e8b4
+    ports: ["127.0.0.1:3001:3001"]
+
+  rbp-branding:
+    image: mwinteringham/restfulbookerplatform_branding:2.2@sha256:dc5154f23bca7c51e4141195cc4f2a212b63866aae8c1fa31e277542abb77b51
+    environment: *no-telemetry
+    ports: ["127.0.0.1:3002:3002"]
+
+  rbp-auth:
+    image: mwinteringham/restfulbookerplatform_auth:2.2@sha256:ae9a3d037ced7e4737cea900404af5c7ac3b6e3db50ff1fbe8aa0cdca0c7643f
+    environment: *no-telemetry
+    ports: ["127.0.0.1:3004:3004"]
+
+  rbp-report:
+    image: mwinteringham/restfulbookerplatform_report:2.2@sha256:d2ea0017189848f1a97f2e41a9a331d7a614497444e7834bdf8588b9ca0a6e2b
+    ports: ["127.0.0.1:3005:3005"]
+
+  rbp-message:
+    image: mwinteringham/restfulbookerplatform_message:2.2@sha256:abf891a452fdcf80a7f3bbb89183e0e776d950ce1b940d57c9738da08a4926f1
+    ports: ["127.0.0.1:3006:3006"]
+
+  # The front end (Next.js) serves the pages and forwards /api/<service>/ to the services above.
+  rbp-assets:
+    image: mwinteringham/restfulbookerplatform_assets:2.2@sha256:d3504bac193d2e5df5f9ab8df295f3857b8e4db094ee1a6b0a39ffdccae3dd35
+    ports: ["127.0.0.1:8080:80"]
