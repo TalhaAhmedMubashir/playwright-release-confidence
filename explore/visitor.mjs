@@ -20,7 +20,7 @@ await mkdir(`${OUT}/pages`, { recursive: true });
 await mkdir(`${OUT}/api`, { recursive: true });
 
 const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: DESKTOP });
+const context = await browser.newContext({ baseURL: BASE_URL, viewport: DESKTOP });
 await context.tracing.start({ screenshots: true, snapshots: true });
 const page = await context.newPage();
 
@@ -29,18 +29,7 @@ const external = new Set();
 const queue = ['/'];
 const seen = new Set(queue);
 
-while (queue.length > 0 && visited.length < MAX_PAGES) {
-  const path = queue.shift();
-  const consoleErrors = [];
-  const failedRequests = [];
-  const onConsole = (message) => message.type() === 'error' && consoleErrors.push(message.text());
-  const onResponse = (response) =>
-    response.status() >= 400 && failedRequests.push(`${response.status()} ${response.request().method()} ${response.url()}`);
-  const onFailed = (request) => failedRequests.push(`failed ${request.method()} ${request.url()}: ${request.failure()?.errorText}`);
-  page.on('console', onConsole);
-  page.on('response', onResponse);
-  page.on('requestfailed', onFailed);
-
+async function record(path, consoleErrors, failedRequests) {
   const response = await page.goto(path, { waitUntil: 'networkidle' });
   const name = slug(path);
   await writeFile(`${OUT}/pages/${name}.desktop.aria.yml`, await page.locator('body').ariaSnapshot());
@@ -84,10 +73,30 @@ while (queue.length > 0 && visited.length < MAX_PAGES) {
   }
 
   visited.push({ path, status: response?.status() ?? null, title: await page.title(), forms, links, consoleErrors, failedRequests });
+  console.log(`${response?.status() ?? '-'} ${path}: ${forms.length} form(s), ${links.length} link(s), ${consoleErrors.length} console error(s)`);
+}
+
+while (queue.length > 0 && visited.length < MAX_PAGES) {
+  const path = queue.shift();
+  const consoleErrors = [];
+  const failedRequests = [];
+  const onConsole = (message) => message.type() === 'error' && consoleErrors.push(message.text());
+  const onResponse = (response) =>
+    response.status() >= 400 && failedRequests.push(`${response.status()} ${response.request().method()} ${response.url()}`);
+  const onFailed = (request) => failedRequests.push(`failed ${request.method()} ${request.url()}: ${request.failure()?.errorText}`);
+  page.on('console', onConsole);
+  page.on('response', onResponse);
+  page.on('requestfailed', onFailed);
+  try {
+    await record(path, consoleErrors, failedRequests);
+  } catch (error) {
+    // One page that can't be recorded is itself a finding; carry on with the rest.
+    visited.push({ path, error: error.message.split('\n')[0], consoleErrors, failedRequests });
+    console.log(`error ${path}: ${error.message.split('\n')[0]}`);
+  }
   page.off('console', onConsole);
   page.off('response', onResponse);
   page.off('requestfailed', onFailed);
-  console.log(`${response?.status() ?? '-'} ${path}: ${forms.length} form(s), ${links.length} link(s), ${consoleErrors.length} console error(s)`);
 }
 
 await writeFile(`${OUT}/pages.json`, `${JSON.stringify({ visited, notVisited: queue, external: [...external].sort() }, null, 2)}\n`);
