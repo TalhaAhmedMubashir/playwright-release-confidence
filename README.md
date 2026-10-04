@@ -8,9 +8,12 @@ bed-and-breakfast booking app made for testing practice. Work in progress.
 
 1. **Start-up trial: done.** RBP starts in CI in under 90 s, so it stays as the app under test.
    The rule, written before the first run, and the numbers: [DECISIONS.md](DECISIONS.md), decision 1.
-2. **Exploration: in progress.** The app is explored as a visitor in CI
-   (`.github/workflows/explore.yml`); tests take their selectors only from what was observed.
-3. **Test-case list:** written next, and approved before any test code.
+2. **Exploration of the visitor side: done.** The app was explored in CI
+   (`.github/workflows/explore.yml`), and the records are in
+   [docs/exploration/2026-10-04](docs/exploration/2026-10-04). Tests take their selectors only from
+   records like these. It found 9 defects, among them a privacy leak and a crash.
+3. **Test-case list: waiting for approval.** [TEST-CASES.md](TEST-CASES.md). No test code is
+   written before it is approved.
 
 ## How the app runs
 
