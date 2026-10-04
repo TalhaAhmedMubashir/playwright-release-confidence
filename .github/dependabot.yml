@@ -5,3 +5,20 @@ updates:
     directory: /
     schedule:
       interval: weekly
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      playwright:
+        patterns: ['@playwright/test', '@axe-core/playwright']
+      lint:
+        patterns: ['eslint', '@eslint/*', 'typescript-eslint', 'eslint-plugin-playwright']
+    ignore:
+      # typescript-eslint supports TypeScript below 6.1.
+      - dependency-name: typescript
+        versions: ['>=6.1.0']
+      # Node's types follow the Node version in .nvmrc.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']

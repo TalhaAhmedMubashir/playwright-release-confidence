@@ -1,0 +1,121 @@
+name: CI
+
+# Every pull request and push to main: the suite's own checks, then the API tests and the UI smoke
+# tests in Chromium against a fresh copy of the app, then the release gate. The gate is what a pull
+# request must pass before merging.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    name: Lint, types and honest signals
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history, for the secret and banned-word scans.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint (it also stops tests that can't fail)
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Every test file is collected
+        run: npm run check:collected
+
+      - name: The README's numbers match the tests
+        run: npm run readme:check
+
+      - name: The checks above can fail (honest-signal self-tests)
+        run: npm run test:meta
+
+      - name: Scan for secrets (all history)
+        # gitleaks is downloaded and checked against the SHA-256 below. To update it, take the new
+        # version's linux_x64 line from the checksums file on its release page.
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -sSfL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum --check --strict
+          tar -xzf gitleaks.tar.gz gitleaks
+          cd "$GITHUB_WORKSPACE"
+          "$RUNNER_TEMP/gitleaks" git . --redact --no-banner
+
+      - name: Scan for banned words (files, history and pull request text)
+        env:
+          # The list is a secret too: a public list would leak the very words it protects.
+          BANNED_WORDS: ${{ secrets.BANNED_WORDS }}
+          PR_TEXT: "${{ github.event.pull_request.title }}\n${{ github.event.pull_request.body }}"
+        run: node scripts/check-banned-words.mjs
+
+  tests:
+    name: API tests, UI smoke tests and the release gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Start the app
+        run: node scripts/start-app.mjs
+
+      - name: API tests and UI smoke tests
+        run: npm run test:pr
+        env:
+          # Our own throwaway copy: tests may change what its visitors see, and put it back.
+          ALLOW_SITE_SETTINGS_CHANGES: '1'
+
+      - name: Release gate
+        if: ${{ !cancelled() }}
+        run: node scripts/gate.ts test-results/results.json --require "API,Home page,Contact form,Booking,Admin area"
+
+      - name: Show the app's logs
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+
+      - name: Keep the report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
