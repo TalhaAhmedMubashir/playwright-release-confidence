@@ -43,6 +43,9 @@ jobs:
       - name: Record the admin area, signed in on our own copy
         run: node explore/admin.mjs
 
+      - name: Try what the admin area lets you do, on our own copy
+        run: node explore/admin-flows.mjs
+
       - name: Show the app's logs
         if: failure()
         run: docker compose logs --no-color --tail 100

@@ -33,16 +33,19 @@ let current = 'start';
 page.on('response', async (response) => {
   const url = new URL(response.url());
   if (!url.pathname.startsWith('/api/')) return;
-  const answer = await response.text().catch(() => null);
-  calls.push({
-    step: current,
-    method: response.request().method(),
-    path: url.pathname + url.search,
-    status: response.status(),
-    sent: redact(response.request().postData()),
-    answer: redact(answer).slice(0, 1500),
-    setsCookie: (await response.allHeaders())['set-cookie'] ? redact((await response.allHeaders())['set-cookie']) : null,
-  });
+  // A response can arrive while the browser closes; a call that can't be read is simply not recorded.
+  try {
+    const headers = await response.allHeaders();
+    calls.push({
+      step: current,
+      method: response.request().method(),
+      path: url.pathname + url.search,
+      status: response.status(),
+      sent: redact(response.request().postData()),
+      answer: redact(await response.text().catch(() => null)).slice(0, 1500),
+      setsCookie: headers['set-cookie'] ? redact(headers['set-cookie']) : null,
+    });
+  } catch {}
 });
 
 const visited = [];
