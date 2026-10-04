@@ -25,7 +25,7 @@ CI, on 2026-10-04. The records are in [docs/exploration/2026-10-04](docs/explora
 
 ## Findings from exploration
 
-F1 to F9 were seen while exploring; F10 to F19 by the suite's first full run on pull request #10 (2026-10-04), in all three browsers. Each has an issue in this repo, with steps, expected and actual results and
+F1 to F9 were seen while exploring; F10 to F21 by the suite's first full runs on pull request #10 (2026-10-04), in all three browsers. Each has an issue in this repo, with steps, expected and actual results and
 evidence, and each becomes a known-bug test once this list is approved. RBP is built for testing
 practice, so some may be deliberate. The suite reports them either way.
 
@@ -50,6 +50,8 @@ practice, so some may be deliberate. The suite reports them either way.
 | F17 | The sign-in cookie isn't HttpOnly, so scripts on the page can read it | signing in | Medium: security | [#18](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/issues/18) | ADM-10 |
 | F18 | Footer links, the breadcrumb and several admin buttons have too little colour contrast | most pages | Low: accessibility | [#19](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/issues/19) | A11Y-01, A11Y-03 |
 | F19 | Admin form fields have no accessible name, and the room delete icon can't be reached by keyboard | admin rooms and branding | Medium: accessibility | [#20](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/issues/20) | A11Y-03 |
+| F20 | Asking for a room that doesn't exist answers 500, not 404 | `GET /api/room/{id}` | Low | [#21](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/issues/21) | API-12 |
+| F21 | Signing out doesn't end the session: the old sign-in token keeps working | admin "Logout" | Medium: security | [#22](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/issues/22) | ADM-09 |
 
 ## UI: home page
 
@@ -62,7 +64,7 @@ practice, so some may be deliberate. The suite reports them either way.
 | UI-03 | The menu links Rooms, Booking, Location and Contact go to their sections | Nightly | `@regression` |
 | UI-04 | The menu link Amenities goes to an amenities section (F3) | Nightly | `@known-bug` |
 | UI-05 | At phone width the menu opens from its button and shows the same links | Nightly | `@regression` |
-| UI-06 | The availability search doesn't offer a room that is booked for the chosen dates (to confirm; it books one of the app's own rooms years ahead, since added rooms aren't shown: F12) | Nightly | `@regression` |
+| UI-06 | The availability search doesn't offer a room that is booked for the chosen dates (confirmed: passes; it books one of the app's own rooms years ahead, since added rooms aren't shown: F12) | Nightly | `@regression` |
 | UI-15 | The footer's quick links Home, Rooms, Booking and Contact go to their pages or sections (F6) | Nightly | `@known-bug` |
 | UI-16 | Every page has its own title (F9) | Nightly | `@known-bug` |
 
@@ -93,13 +95,13 @@ practice, so some may be deliberate. The suite reports them either way.
 | API-03 | Message rules at their limits: phone 10, 11, 21 and 22 characters; subject 4, 5, 100 and 101; message 19, 20, 2000 and 2001; malformed email; each field blank | PR | `@api` |
 | API-04 | Booking rules at their limits: first name 2, 3, 18 and 19 characters; last name 2, 3, 30 and 31; phone 10, 11, 21 and 22; email blank or malformed | PR | `@api` |
 | API-05 | Creating a booking answers 201 with the booking; the same room and dates again answer 409 | PR | `@smoke` |
-| API-06 | A check-out on or before the check-in is refused (to confirm) | PR | `@api` |
+| API-06 | A check-out on or before the check-in is refused (confirmed: passes) | PR | `@api` |
 | API-07 | A new booking's dates appear in `GET /booking/unavailable` and `GET /report/room/{id}` | PR | `@api` |
 | API-08 | Every endpoint that changes data or reads private data refuses a visitor with 401 or 403. Seen: list bookings, read a booking, booking summary, the all-rooms report, create a room, change branding. Expected from the API description: change or delete a room, delete a booking, mark a message read, delete a message. All refusals use one status and one answer shape (F8) | PR | `@security` `@known-bug` |
 | API-09 | Contact messages can't be read without signing in (F1) | PR | `@security` `@known-bug` |
 | API-10 | An error answer doesn't reveal the app's internal code: class names, exception types (F11). *Added* | PR | `@security` `@known-bug` |
 | API-11 | Creating a booking answers as the API description says: status 200 and `{bookingid, booking}` (F10). *Added* | PR | `@known-bug` |
-| API-12 | A room that doesn't exist answers 404. *Added*; to confirm (a deleted room answered 500 in the first run) | PR | `@api` |
+| API-12 | A room that doesn't exist answers 404 (F20). *Added* | PR | `@known-bug` |
 
 ## Accessibility
 
@@ -138,11 +140,11 @@ Explored signed in on our own copy, with the app's published default login (owne
 | ADM-06 | The message dialog is named after the message (F15) | Nightly | `@known-bug` |
 | ADM-07 | A new B&B name shows on the public site, and the original comes back afterwards, behind the guard (F16) | Nightly | `@guard` `@known-bug` |
 | ADM-08 | A visitor's booking shows in the admin report with the guest's name and room | Nightly | `@admin` |
-| ADM-09 | Signing out ends the session: the old sign-in stops working (to confirm; the first run's control check was wrong, now fixed) | Nightly | `@security` |
+| ADM-09 | Signing out ends the session: the old sign-in stops working (F21) | Nightly | `@security` `@known-bug` |
 | ADM-10 | The sign-in cookie can't be read by the page's scripts (F17) | Nightly | `@security` `@known-bug` |
 
 ## Decisions
 
 - The owner approved this list as written, and allowed signing in on our own copy (2026-10-04).
-- F1 to F9 are tracked as issues #1 to #9 in this repo (owner, 2026-10-04); F10 to F19, found by the suite the same day, as #11 to #20. Nothing has been
+- F1 to F9 are tracked as issues #1 to #9 in this repo (owner, 2026-10-04); F10 to F21, found by the suite the same day, as #11 to #22. Nothing has been
 reported to RBP's maintainer; that would be public, so it waits for the owner.

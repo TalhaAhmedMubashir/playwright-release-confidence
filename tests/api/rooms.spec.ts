@@ -1,5 +1,6 @@
 import { read } from '../../src/api/client.ts';
 import { Branding, Room, Rooms } from '../../src/api/schemas.ts';
+import { issue } from '../../src/config.ts';
 import { ROOM_PREFIX } from '../../src/data.ts';
 import { expect, test } from '../../src/fixtures.ts';
 
@@ -22,6 +23,6 @@ test('API-02 the branding matches its schema', { tag: '@api' }, async ({ visitor
   expect((await read(response, Branding)).name.length).toBeGreaterThan(0);
 });
 
-test("API-12 a room that doesn't exist answers 404", { tag: '@api' }, async ({ visitor }) => {
+test.fail("API-12 a room that doesn't exist answers 404", { tag: ['@api', '@known-bug'], annotation: issue(21) }, async ({ visitor }) => {
   expect((await visitor.room(999_999)).status()).toBe(404);
 });

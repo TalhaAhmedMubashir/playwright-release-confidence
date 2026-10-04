@@ -32,7 +32,7 @@ test.describe('signing in and out', () => {
     await expect(page).toHaveURL(/\/admin$/);
   });
 
-  test('ADM-09 signing out ends the session: the old sign-in stops working', { tag: ['@ui', '@admin', '@security'] }, async ({ page, context, playwright }) => {
+  test.fail('ADM-09 signing out ends the session: the old sign-in stops working', { tag: ['@ui', '@admin', '@security', '@known-bug'], annotation: issue(22) }, async ({ page, context, playwright }) => {
     const admin = new AdminPage(page);
     await admin.gotoSignIn();
     await admin.signIn(ADMIN);
