@@ -1,6 +1,7 @@
 name: Explore the app
 
-# Starts the app and records what a visitor sees (explore/visitor.mjs). The records are the source
+# Starts the app and records what a visitor sees (explore/visitor.mjs, explore/flows.mjs) and, signed
+# in on our own copy, the admin area (explore/admin.mjs). The records are the source
 # of every selector the tests use. Download them from the run's artifacts.
 
 on:
@@ -11,7 +12,7 @@ permissions:
 
 jobs:
   explore:
-    name: Explore as a visitor
+    name: Explore the app
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -38,6 +39,9 @@ jobs:
 
       - name: Try what a visitor can do
         run: node explore/flows.mjs
+
+      - name: Record the admin area, signed in on our own copy
+        run: node explore/admin.mjs
 
       - name: Show the app's logs
         if: failure()
