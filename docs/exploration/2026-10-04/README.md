@@ -13,6 +13,17 @@ Screenshots and a Playwright trace of both passes were kept as that run's artifa
 Booking pages are named after their room (`reservation-1` is room 1); the dates in their addresses
 were tonight and tomorrow.
 
-The pages visited: the home page, a booking page per room, the cookie policy and the privacy
-policy. The services' API descriptions were read from the app itself
-(`/api/{service}/v3/api-docs`).
+The services' API descriptions were read from the app itself (`/api/{service}/v3/api-docs`).
+
+## Pages visited
+
+| Address | Status | Title |
+|---|---|---|
+| `/` | 200 | Restful-booker-platform demo |
+| `/reservation/1?checkin=2026-10-04&checkout=2026-10-05` | 200 | Restful-booker-platform demo |
+| `/reservation/2?checkin=2026-10-04&checkout=2026-10-05` | 200 | Restful-booker-platform demo |
+| `/reservation/3?checkin=2026-10-04&checkout=2026-10-05` | 200 | Restful-booker-platform demo |
+| `/cookie` | 200 | Restful-booker-platform demo |
+| `/privacy` | 200 | Restful-booker-platform demo |
+
+None logged a console error or a failed request. The admin area (`/admin`) was not visited.

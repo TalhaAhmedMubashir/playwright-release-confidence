@@ -11,7 +11,8 @@ bed-and-breakfast booking app made for testing practice. Work in progress.
 2. **Exploration of the visitor side: done.** The app was explored in CI
    (`.github/workflows/explore.yml`), and the records are in
    [docs/exploration/2026-10-04](docs/exploration/2026-10-04). Tests take their selectors only from
-   records like these. It found 9 defects, among them a privacy leak and a crash.
+   records like these. It found 9 defects, among them a privacy leak and a crash, each tracked as an
+   [issue](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/issues?q=label%3Aknown-bug).
 3. **Test-case list: waiting for approval.** [TEST-CASES.md](TEST-CASES.md). No test code is
    written before it is approved.
 
