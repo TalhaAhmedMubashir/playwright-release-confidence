@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import type { NewRoom } from '../api/client.ts';
 
 /**
- * The admin area. Selectors from the admin exploration (explore/admin.mjs and admin-flows.mjs).
+ * The admin area. Selectors from the admin exploration's records (docs/exploration/2026-10-04/admin).
  * Several admin controls have no accessible name, so their observed ids are the only handle; those
  * are marked below.
  */

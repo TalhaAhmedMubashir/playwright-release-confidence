@@ -1,0 +1,116 @@
+- navigation:
+  - link "Restful Booker Platform Demo":
+    - /url: /
+  - list:
+    - listitem:
+      - link "Rooms":
+        - /url: /admin/rooms
+    - listitem:
+      - link "Report":
+        - /url: /admin/report
+    - listitem:
+      - link "Branding":
+        - /url: /admin/branding
+    - listitem:
+      - link "Messages 3":
+        - /url: /admin/message
+  - list:
+    - listitem:
+      - link "Front Page":
+        - /url: /
+    - listitem:
+      - button "Logout"
+- button "Today"
+- button "Back"
+- button "Next"
+- text: October 2026
+- table "Month View":
+  - row "Sun Mon Tue Wed Thu Fri Sat":
+    - columnheader "Sun"
+    - columnheader "Mon"
+    - columnheader "Tue"
+    - columnheader "Wed"
+    - columnheader "Thu"
+    - columnheader "Fri"
+    - columnheader "Sat"
+  - rowgroup:
+    - row "27 28 29 30 01 02 03":
+      - cell "27":
+        - button "27"
+      - cell "28":
+        - button "28"
+      - cell "29":
+        - button "29"
+      - cell "30":
+        - button "30"
+      - cell "01":
+        - button "01"
+      - cell "02":
+        - button "02"
+      - cell "03":
+        - button "03"
+  - rowgroup:
+    - row "04 05 06 07 08 09 10":
+      - cell "04":
+        - button "04"
+      - cell "05":
+        - button "05"
+      - cell "06":
+        - button "06"
+      - cell "07":
+        - button "07"
+      - cell "08":
+        - button "08"
+      - cell "09":
+        - button "09"
+      - cell "10":
+        - button "10"
+  - rowgroup:
+    - row "11 12 13 14 15 16 17":
+      - cell "11":
+        - button "11"
+      - cell "12":
+        - button "12"
+      - cell "13":
+        - button "13"
+      - cell "14":
+        - button "14"
+      - cell "15":
+        - button "15"
+      - cell "16":
+        - button "16"
+      - cell "17":
+        - button "17"
+  - rowgroup:
+    - row "18 19 20 21 22 23 24":
+      - cell "18":
+        - button "18"
+      - cell "19":
+        - button "19"
+      - cell "20":
+        - button "20"
+      - cell "21":
+        - button "21"
+      - cell "22":
+        - button "22"
+      - cell "23":
+        - button "23"
+      - cell "24":
+        - button "24"
+  - rowgroup:
+    - row "25 26 27 28 29 30 31":
+      - cell "25":
+        - button "25"
+      - cell "26":
+        - button "26"
+      - cell "27":
+        - button "27"
+      - cell "28":
+        - button "28"
+      - cell "29":
+        - button "29"
+      - cell "30":
+        - button "30"
+      - cell "31":
+        - button "31"
+- alert

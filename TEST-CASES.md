@@ -126,8 +126,8 @@ From PLAN.md, "Flagship scope".
 ## Admin area (*added*)
 
 Explored signed in on our own copy, with the app's published default login (owner's permission,
-2026-10-04). Records: the "Explore the app" workflow's admin passes (`explore/admin.mjs`,
-`explore/admin-flows.mjs`).
+2026-10-04). Records: [docs/exploration/2026-10-04/admin](docs/exploration/2026-10-04/admin), made
+by `explore/admin.mjs` and `explore/admin-flows.mjs`.
 
 | ID | Check | Runs | Tags |
 |---|---|---|---|

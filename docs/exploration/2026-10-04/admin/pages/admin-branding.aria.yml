@@ -1,0 +1,56 @@
+- navigation:
+  - link "Restful Booker Platform Demo":
+    - /url: /
+  - list:
+    - listitem:
+      - link "Rooms":
+        - /url: /admin/rooms
+    - listitem:
+      - link "Report":
+        - /url: /admin/report
+    - listitem:
+      - link "Branding":
+        - /url: /admin/branding
+    - listitem:
+      - link "Messages 3":
+        - /url: /admin/message
+  - list:
+    - listitem:
+      - link "Front Page":
+        - /url: /
+    - listitem:
+      - button "Logout"
+- heading "B&B details" [level=2]
+- text: Name
+- textbox "Enter B&B name": Shady Meadows B&B
+- text: Logo
+- textbox "Enter image url": /images/rbp-logo.jpg
+- text: Description
+- textbox: Welcome to Shady Meadows, a delightful Bed & Breakfast nestled in the hills on Newingtonfordburyshire. A place so beautiful you will never want to leave. All our rooms have comfortable beds and we provide breakfast from the locally sourced supermarket. It is a delightful place.
+- heading "Map details" [level=2]
+- text: Latitude
+- textbox "Enter Latitude": "52.6351204"
+- text: Longitude
+- textbox "Enter Longitude": "1.2733774"
+- text: Directions
+- textbox: Welcome to Shady Meadows, a delightful Bed & Breakfast nestled in the hills on Newingtonfordburyshire. A place so beautiful you will never want to leave. All our rooms have comfortable beds and we provide breakfast from the locally sourced supermarket. It is a delightful place.
+- heading "Contact details" [level=2]
+- text: Name
+- textbox "Enter Contact Name": Shady Meadows B&B
+- text: Phone
+- textbox "Enter Phone Number": "012345678901"
+- text: Email
+- textbox "Enter Email Address": fake@fakeemail.com
+- heading "Address details" [level=2]
+- text: Line 1
+- textbox "Enter Address Line 1": Shady Meadows B&B
+- text: Line 2
+- textbox "Enter Address Line 2": Shadows valley
+- text: Post Town
+- textbox "Enter Post Town": Newingtonfordburyshire
+- text: County
+- textbox "Enter County": Dilbery
+- text: Post Code
+- textbox "Enter Post Code": N1 1AA
+- button "Submit"
+- alert
