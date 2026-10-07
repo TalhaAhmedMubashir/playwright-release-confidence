@@ -117,7 +117,7 @@ test.describe('the admin area', () => {
       .toBe(true);
   });
 
-  test.fail('ADM-06 the message dialog is named after the message', { tag: ['@ui', '@admin', '@a11y', '@known-bug'], annotation: issue(16) }, async ({ page, visitor }) => {
+  test.fail('ADM-11 the message dialog is named after the message', { tag: ['@ui', '@admin', '@a11y', '@known-bug'], annotation: issue(16) }, async ({ page, visitor }) => {
     const subject = `Question ${uniqueName('')}`;
     expect((await visitor.createMessage({ ...MESSAGE, subject })).status()).toBe(200);
     const admin = new AdminPage(page);

@@ -47,7 +47,7 @@ test('UI-12 sending the empty guest form lists the problems', { tag: '@ui' }, as
   for (const error of EMPTY_GUEST_ERRORS) await expect(reservation.errors.filter({ hasText: error }).first()).toBeVisible();
 });
 
-test.fail('UI-12 each problem with the guest form names its field', { tag: ['@ui', '@known-bug'], annotation: issue(7) }, async ({ page, room }) => {
+test.fail('UI-19 each problem with the guest form names its field', { tag: ['@ui', '@known-bug'], annotation: issue(7) }, async ({ page, room }) => {
   const reservation = new ReservationPage(page);
   await reservation.goto(room.roomid, stay());
   await reservation.reserve.click();

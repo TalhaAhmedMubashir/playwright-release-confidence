@@ -27,7 +27,7 @@ test('UI-02 every room shown has its type, price and features from the room serv
   }
 });
 
-test.fail("UI-02 each room's photo is described as its own room", { tag: ['@ui', '@a11y', '@known-bug'], annotation: issue(5) }, async ({ page, visitor }) => {
+test.fail("UI-18 each room's photo is described as its own room", { tag: ['@ui', '@a11y', '@known-bug'], annotation: issue(5) }, async ({ page, visitor }) => {
   const home = new HomePage(page);
   await home.goto();
   for (const id of await home.shownRoomIds()) {

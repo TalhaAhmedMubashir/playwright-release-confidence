@@ -37,7 +37,7 @@ const shapeOf = async (response: Awaited<ReturnType<Api['get']>>) => {
   return `${response.status()} ${text ? Object.keys(JSON.parse(text) as object).join(',') : '(empty body)'}`;
 };
 
-test.fail('API-08 every refusal answers with the same status and the same shape', { tag: ['@api', '@known-bug'], annotation: issue(8) }, async ({ visitor }) => {
+test.fail('API-13 every refusal answers with the same status and the same shape', { tag: ['@api', '@known-bug'], annotation: issue(8) }, async ({ visitor }) => {
   const answers = [await visitor.get('/booking'), await visitor.get('/booking/1'), await visitor.get('/report'), await visitor.post('/room', {})];
   expect(new Set(await Promise.all(answers.map(shapeOf)))).toHaveProperty('size', 1);
 });
