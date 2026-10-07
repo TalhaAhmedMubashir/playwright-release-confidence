@@ -31,6 +31,32 @@ Risk decides what is tested and at which level; the level decides where it runs.
 | Every pull request | Lint, types, honest-signal checks, secret and banned-word scans; all API tests; the UI smoke tests in Chromium; the release gate | Fast enough to wait for, and covers each area's core path |
 | Every night | Everything, in Chromium, Firefox and WebKit, with the accessibility checks; one merged report; the release gate | Breadth, without slowing pull requests down |
 
+## What a nightly run can show
+
+The app is pinned: `docker-compose.yml` names each image by its digest, and a new app version is a
+new decision ([DECISIONS.md](DECISIONS.md), decision 1). Without one, a pull request changes the
+tests, not the app. So a nightly run with no merge since the last green one runs the same tests
+against the same app. If it goes red, the cause is one of these four, never a change in the app:
+
+- **The environment:** the runner, Docker or the network; for example, the app didn't start.
+- **The date:** a test, or the app, behaves differently on some days, such as at the end of a month.
+- **A dependency that isn't pinned:** the runner's image and system packages, or the newest Node 24.
+- **A flaky test:** the same code gives a different result.
+
+## When a run goes red
+
+1. **Was anything merged since the last green run?** If not, look for one of the four causes
+   above. If so, start from what the merge changed.
+2. **Read the evidence:** the error, the trace and screenshot kept for each failed test, and the
+   app's logs, which a failed job prints.
+3. **Sort it, and act:**
+   - **The environment or a dependency:** fix it where it lives: the start script, the workflow, or
+     a pin.
+   - **The test:** flaky, tied to the date, or checking the wrong thing. Fix the test, so that every
+     run gives the same answer.
+   - **The app:** a real defect. It gets an issue with steps, expected and actual results and
+     evidence, and its test checks the right behaviour, marked as a known bug (decision 6).
+
 ## Data and safety
 
 - The app runs on this machine only; any other address stops the run (`src/config.ts`).
@@ -47,3 +73,5 @@ Risk decides what is tested and at which level; the level decides where it runs.
   comes off.
 - **A skipped test** counts as not passed, and **an area where nothing ran** fails: silence is not
   success.
+- **A flaky test is a failure:** it gets fixed, not retried. Retries are off, so no run turns green
+  by trying a test twice, and the gate would fail such a test anyway.
