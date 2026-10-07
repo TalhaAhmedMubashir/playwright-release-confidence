@@ -72,7 +72,7 @@ practice, so some may be deliberate. The suite reports them either way.
 
 | ID | Check | Runs | Tags |
 |---|---|---|---|
-| UI-07 | A valid message shows "Thanks for getting in touch {name}!" and repeats its subject | PR | `@smoke` |
+| UI-07 | A valid message shows "Thanks for getting in touch {name}!" and repeats its subject; the admin API then has the message as sent | PR | `@smoke` |
 | UI-08 | Sending the empty form lists a problem for every field (8 messages seen) | Nightly | `@regression` |
 | UI-09 | The form's errors are announced to screen-reader users (F13) | Nightly | `@a11y` `@known-bug` |
 
@@ -95,7 +95,7 @@ practice, so some may be deliberate. The suite reports them either way.
 | API-03 | Message rules at their limits: phone 10, 11, 21 and 22 characters; subject 4, 5, 100 and 101; message 19, 20, 2000 and 2001; malformed email; each field blank | PR | `@api` |
 | API-04 | Booking rules at their limits: first name 2, 3, 18 and 19 characters; last name 2, 3, 30 and 31; phone 10, 11, 21 and 22; email blank or malformed | PR | `@api` |
 | API-05 | Creating a booking answers 201 with the booking; the same room and dates again answer 409 | PR | `@smoke` |
-| API-06 | A check-out on or before the check-in is refused (confirmed: passes) | PR | `@api` |
+| API-06 | A check-out on or before the check-in is refused with 409 and "Failed to create booking", the answer a double booking gets (seen in CI, 2026-10-07) | PR | `@api` |
 | API-07 | A new booking's dates appear in `GET /booking/unavailable` and `GET /report/room/{id}` | PR | `@api` |
 | API-08 | Every endpoint that changes data or reads private data refuses a visitor with 401 or 403. Seen: list bookings, read a booking, booking summary, the all-rooms report, create a room, change branding. Expected from the API description: change or delete a room, delete a booking, mark a message read, delete a message. All refusals use one status and one answer shape (F8) | PR | `@security` `@known-bug` |
 | API-09 | Contact messages can't be read without signing in (F1) | PR | `@security` `@known-bug` |
