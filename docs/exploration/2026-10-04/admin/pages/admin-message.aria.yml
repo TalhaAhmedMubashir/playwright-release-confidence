@@ -1,0 +1,34 @@
+- navigation:
+  - link "Restful Booker Platform Demo":
+    - /url: /
+  - list:
+    - listitem:
+      - link "Rooms":
+        - /url: /admin/rooms
+    - listitem:
+      - link "Report":
+        - /url: /admin/report
+    - listitem:
+      - link "Branding":
+        - /url: /admin/branding
+    - listitem:
+      - link "Messages 3":
+        - /url: /admin/message
+  - list:
+    - listitem:
+      - link "Front Page":
+        - /url: /
+    - listitem:
+      - button "Logout"
+- paragraph: Name
+- paragraph: Subject
+- paragraph: James Dean
+- paragraph: Booking enquiry
+- text: 
+- paragraph: Test Visitor
+- paragraph: Question about rooms
+- text: 
+- paragraph: Test Visitor
+- paragraph: You have a new booking!
+- text: 
+- alert
