@@ -62,14 +62,16 @@ test('API-05 a booking is made once; the same room and dates again are refused',
   expect((await visitor.createBooking(request)).status()).toBe(409);
 });
 
+// The answer seen in CI on 2026-10-07 (run 37655567888) for both cases. It is the one a double booking
+// got while exploring (docs/exploration/2026-10-04/flows.md, step 9), so it doesn't say what was wrong.
 test('API-06 a check-out on or before the check-in is refused', { tag: '@api' }, async ({ visitor, room }) => {
   for (const [checkin, checkout] of [
     [day(40), day(40)],
     [day(42), day(40)],
   ] as const) {
-    const status = (await visitor.createBooking(booking(room.roomid, { bookingdates: { checkin, checkout } }))).status();
-    expect(status, `check-in ${checkin}, check-out ${checkout}`).toBeGreaterThanOrEqual(400);
-    expect(status, `check-in ${checkin}, check-out ${checkout}`).toBeLessThan(500);
+    const response = await visitor.createBooking(booking(room.roomid, { bookingdates: { checkin, checkout } }));
+    expect(response.status(), `check-in ${checkin}, check-out ${checkout}`).toBe(409);
+    expect(await response.json(), `check-in ${checkin}, check-out ${checkout}`).toEqual({ error: 'Failed to create booking' });
   }
 });
 
