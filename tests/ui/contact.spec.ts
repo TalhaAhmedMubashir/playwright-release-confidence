@@ -1,5 +1,7 @@
+import { read } from '../../src/api/client.ts';
+import { Message, Messages } from '../../src/api/schemas.ts';
 import { issue } from '../../src/config.ts';
-import { MESSAGE } from '../../src/data.ts';
+import { MESSAGE, uniqueName } from '../../src/data.ts';
 import { expect, test } from '../../src/fixtures.ts';
 import { HomePage } from '../../src/pages/home.ts';
 
@@ -15,12 +17,18 @@ const EMPTY_FORM_ERRORS = [
   'Message must be between 20 and 2000 characters.',
 ];
 
-test('UI-07 a valid message is thanked by name, and its subject repeated', { tag: ['@ui', '@smoke'] }, async ({ page }) => {
+test('UI-07 a valid message is thanked by name and its subject repeated; the admin API has it as sent', { tag: ['@ui', '@smoke'] }, async ({ page, admin }) => {
+  const message = { ...MESSAGE, subject: `Question ${uniqueName('')}` };
   const home = new HomePage(page);
   await home.goto();
-  await home.sendMessage(MESSAGE);
-  await expect(page.getByRole('heading', { name: `Thanks for getting in touch ${MESSAGE.name}!` })).toBeVisible();
-  await expect(page.getByText(MESSAGE.subject, { exact: true })).toBeVisible();
+  await home.sendMessage(message);
+  await expect(page.getByRole('heading', { name: `Thanks for getting in touch ${message.name}!` })).toBeVisible();
+  await expect(page.getByText(message.subject, { exact: true })).toBeVisible();
+
+  // The thank-you is only what the page says; the admin API shows what was stored.
+  const storedId = async () => (await read(await admin.get('/message'), Messages)).messages.find((each) => each.subject === message.subject)?.id;
+  await expect.poll(storedId, { message: 'the message, in the admin inbox' }).toBeDefined();
+  expect(await read(await admin.get(`/message/${await storedId()}`), Message)).toMatchObject(message);
 });
 
 test('UI-08 sending the empty form lists a problem for every field', { tag: '@ui' }, async ({ page }) => {
