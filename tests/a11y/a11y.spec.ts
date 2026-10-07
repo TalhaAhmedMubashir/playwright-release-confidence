@@ -86,14 +86,19 @@ test.describe('signed in', () => {
   test('A11Y-03 the admin pages have no accessibility problem beyond the known ones', { tag: ['@a11y', '@admin'], annotation: [issue(19), issue(20)] }, async ({ page }) => {
     const admin = new AdminPage(page);
     const found: string[] = [];
-    for (const [where, open] of [
-      ['admin rooms', admin.gotoRooms],
-      ['admin report', admin.gotoReport],
-      ['admin branding', admin.gotoBranding],
-      ['admin messages', admin.gotoMessages],
+    // Each admin page shows its menu first and asks the API for its content after, so the scan waits
+    // for that answer (the calls are in docs/exploration/2026-10-04/admin/visited.md). Waiting for the
+    // menu alone scanned the branding page before its form came (nightly run of 2026-10-06).
+    for (const [where, open, content] of [
+      ['admin rooms', admin.gotoRooms, '/api/room'],
+      ['admin report', admin.gotoReport, '/api/report'],
+      ['admin branding', admin.gotoBranding, '/api/branding'],
+      ['admin messages', admin.gotoMessages, '/api/message'],
     ] as const) {
+      const answered = page.waitForResponse((response) => new URL(response.url()).pathname === content);
       await open();
       await expect(admin.logout).toBeVisible();
+      await (await answered).finished();
       found.push(...(await scan(page, where)));
     }
     expect.soft(found.filter((finding) => !isKnown(finding)), 'problems not known yet').toEqual([]);
