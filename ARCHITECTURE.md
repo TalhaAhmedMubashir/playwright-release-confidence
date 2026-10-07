@@ -28,7 +28,7 @@ plus a Next.js front end that serves the pages and forwards `/api/{service}/` to
 | `tests/a11y/` | Accessibility scans and the keyboard check |
 | `tests/setup/` | Signs in once; the admin UI tests reuse the session |
 | `tests/meta/` | Self-tests of the honest-signal checks and the release gate |
-| `scripts/` | Starting the app, the release gate, the collected check, the README numbers, the banned-words scan |
+| `scripts/` | Starting the app, the release gate, the collected check, the README numbers, the test-case check, the banned-words scan |
 | `explore/` | The exploration scripts; their records are in `docs/exploration/` |
 
 ## Choices
