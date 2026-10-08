@@ -49,6 +49,9 @@ jobs:
       - name: The README's numbers match the tests
         run: npm run readme:check
 
+      - name: The test-case list matches the tests, and every test case is under a risk
+        run: npm run check:test-cases
+
       - name: The checks above can fail (honest-signal self-tests)
         run: npm run test:meta
 

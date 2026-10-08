@@ -14,6 +14,7 @@
     "test:meta": "playwright test --project=meta",
     "gate": "node scripts/gate.ts test-results/results.json",
     "check:collected": "node scripts/check-collected.ts",
+    "check:test-cases": "node scripts/check-test-cases.ts",
     "readme:numbers": "node scripts/readme-numbers.ts",
     "readme:check": "node scripts/readme-numbers.ts --check"
   },

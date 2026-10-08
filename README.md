@@ -17,8 +17,8 @@ whether a build may ship.
 | Contact form | 3 | 1 | chromium, firefox, webkit |
 | Home page | 10 | 5 | chromium, firefox, webkit |
 | Accessibility | 3 | 0 | a11y |
-| Honest signals | 17 | 0 | meta |
-| **All** | **93** | **18** | 153 runs across projects |
+| Honest signals | 19 | 0 | meta |
+| **All** | **95** | **18** | 155 runs across projects |
 <!-- numbers:end -->
 
 The full list, with the reason for each test: [TEST-CASES.md](TEST-CASES.md). A known bug is a real
@@ -38,8 +38,8 @@ the suite stays green while the bug is visible, and the gate turns red the day i
 - **The guard:** a test that changes what every visitor sees runs only with
   `ALLOW_SITE_SETTINGS_CHANGES=1`, and must leave the site as it found it (`src/guard.ts`).
 - **Honest signals:** lint stops tests that can't fail; CI fails if a test file is never
-  collected or if the numbers above stop matching the tests; and self-tests prove each of these
-  checks can fail.
+  collected, if the numbers above stop matching the tests, or if [TEST-CASES.md](TEST-CASES.md)
+  does; and self-tests prove each of these checks can fail.
 - **CI:** every pull request runs lint, types, the honest-signal checks, a secret scan, the API
   tests and the UI smoke tests, then the release gate. Every night the whole suite runs in all three
   browsers, with accessibility checks, and the gate judges the merged result.
@@ -62,7 +62,7 @@ npm run app:stop
 ```
 
 Checks that need neither the app nor a browser: `npm run lint`, `npm run typecheck`,
-`npm run test:meta`, `npm run check:collected`, `npm run readme:check`.
+`npm run test:meta`, `npm run check:collected`, `npm run readme:check`, `npm run check:test-cases`.
 
 The tests run only against a copy of the app on this machine: any other address stops the run
 (`src/config.ts`).
