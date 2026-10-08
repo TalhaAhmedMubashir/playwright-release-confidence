@@ -146,6 +146,8 @@ test.describe('the admin area', () => {
     const now = new Date();
     const months = (Number(dates.checkin.slice(0, 4)) - now.getUTCFullYear()) * 12 + Number(dates.checkin.slice(5, 7)) - 1 - now.getUTCMonth();
     for (let step = 0; step < months; step++) await page.getByRole('button', { name: 'Next' }).click();
-    await expect(page.getByText(`${GUEST.firstname} ${GUEST.lastname} - Room: ${room.roomName}`)).toBeVisible();
+    // A stay that crosses into a new week is drawn once per week row: the calendar's weeks start on
+    // Sunday, so a check-in on a Saturday shows as two pieces (nightly run of 2026-10-08).
+    await expect(page.getByText(`${GUEST.firstname} ${GUEST.lastname} - Room: ${room.roomName}`).first()).toBeVisible();
   });
 });
