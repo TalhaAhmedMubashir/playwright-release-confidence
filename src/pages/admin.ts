@@ -51,11 +51,20 @@ export class AdminPage {
   /** A room's delete icon: an unnamed element whose id is the room's id (no role, no keyboard access). */
   deleteRoom = (roomId: number) => this.page.locator(`.roomDelete[id="${roomId}"]`).click();
 
-  /** On a room's own page: Edit, change the price, Update. The price field is found by its id. */
+  /**
+   * On a room's own page: Edit, change the price, Update, then wait until the app has saved it
+   * (`PUT /api/room/{id}`, which answered 202 while exploring: docs/exploration/2026-10-04/admin/flows.md).
+   * Moving on at once can leave the page while the save is on its way, and the browser cancels it:
+   * in the nightly run of 2026-10-09 Firefox did, 17 ms after the click, and ADM-04 saw the old price.
+   * The price field is found by its id.
+   */
   async changePrice(price: number): Promise<void> {
     await this.page.getByRole('button', { name: 'Edit' }).click();
     await this.page.locator('#roomPrice').fill(String(price));
+    const saved = this.page.waitForResponse((response) => response.request().method() === 'PUT' && /^\/api\/room\/\d+$/.test(new URL(response.url()).pathname));
     await this.page.getByRole('button', { name: /update/i }).click();
+    const answer = await saved;
+    if (!answer.ok()) throw new Error(`Saving the room's new price answered ${answer.status()}.`);
   }
 
   messageRow = (subject: string) => this.page.getByText(subject, { exact: true });
