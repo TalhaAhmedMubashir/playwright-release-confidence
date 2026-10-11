@@ -48,6 +48,6 @@ for (const [field, value, error] of REFUSED) {
 }
 
 test.fail("API-09 contact messages can't be read without signing in", { tag: ['@api', '@security', '@known-bug'], annotation: issue(1) }, async ({ visitor }) => {
-  expect([401, 403], 'reading the message list without signing in').toContain((await visitor.get('/message')).status());
-  expect([401, 403], 'reading one message without signing in').toContain((await visitor.get('/message/1')).status());
+  expect([401, 403], 'reading the message list without signing in (#1)').toContain((await visitor.get('/message')).status());
+  expect([401, 403], 'reading one message without signing in (#1)').toContain((await visitor.get('/message/1')).status());
 });

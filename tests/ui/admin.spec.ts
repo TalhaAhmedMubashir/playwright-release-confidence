@@ -47,8 +47,8 @@ test.describe('signing in and out', () => {
     expect((await withOldToken()).status(), 'before signing out').toBe(200);
     await admin.logout.click();
     await expect(page).toHaveURL(`${BASE_URL}/`);
-    expect((await withOldToken()).status(), 'after signing out').toBe(401);
-    expect(await (await api.post('/api/auth/validate', { data: { token } })).json(), 'the token, after signing out').toEqual({ valid: false });
+    expect((await withOldToken()).status(), 'after signing out (#22)').toBe(401);
+    expect(await (await api.post('/api/auth/validate', { data: { token } })).json(), 'the token, after signing out (#22)').toEqual({ valid: false });
     await api.dispose();
   });
 
@@ -57,7 +57,7 @@ test.describe('signing in and out', () => {
     await admin.gotoSignIn();
     await admin.signIn(ADMIN);
     await expect(page).toHaveURL(/\/admin\/rooms$/);
-    expect((await context.cookies()).find((cookie) => cookie.name === 'token'), 'the token cookie').toMatchObject({ httpOnly: true });
+    expect((await context.cookies()).find((cookie) => cookie.name === 'token'), 'the token cookie (#18)').toMatchObject({ httpOnly: true });
   });
 });
 
@@ -99,7 +99,7 @@ test.describe('the admin area', () => {
     const admin = new AdminPage(page);
     await admin.gotoRooms();
     await page.getByRole('button', { name: 'Create' }).click();
-    await expect(page.getByRole('alert').filter({ hasText: /\S/ })).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: /\S/ }), 'a message saying what is missing (#15)').toBeVisible();
   });
 
   test("ADM-06 a visitor's message reaches the inbox; opening it shows the sender and marks it read", { tag: ['@ui', '@admin'] }, async ({ page, visitor, admin }) => {
@@ -123,7 +123,7 @@ test.describe('the admin area', () => {
     const admin = new AdminPage(page);
     await admin.gotoMessages();
     await admin.messageRow(subject).click();
-    await expect(admin.messageDialog).toHaveAccessibleName(new RegExp(subject));
+    await expect(admin.messageDialog, 'the dialog named after the message (#16)').toHaveAccessibleName(new RegExp(subject));
   });
 
   test.fail('ADM-07 a new B&B name shows on the public site, and the original comes back afterwards', { tag: ['@ui', '@admin', '@guard', '@known-bug'], annotation: issue(17) }, async ({ page, admin }) => {
@@ -133,7 +133,7 @@ test.describe('the admin area', () => {
       await adminPage.brandingField('Enter B&B name').fill('Shady Meadows Test');
       await adminPage.saveBranding();
       await new HomePage(page).goto();
-      await expect(page.getByRole('heading', { level: 1 })).toContainText('Shady Meadows Test');
+      await expect(page.getByRole('heading', { level: 1 }), 'the new name on the public site (#17)').toContainText('Shady Meadows Test');
     });
   });
 

@@ -53,7 +53,7 @@ test.fail('UI-19 each problem with the guest form names its field', { tag: ['@ui
   await reservation.reserve.click();
   await reservation.reserve.click();
   await expect(reservation.errors).toHaveCount(7);
-  for (const item of await reservation.errors.all()) await expect(item).toHaveText(/first ?name|last ?name|email|phone/i);
+  for (const item of await reservation.errors.all()) await expect(item, 'each problem names its field (#7)').toHaveText(/first ?name|last ?name|email|phone/i);
 });
 
 test.fail('UI-13 booking dates that are already taken says so and leaves the page usable', { tag: ['@ui', '@known-bug'], annotation: issue(2) }, async ({ page, visitor, room }) => {
@@ -62,8 +62,8 @@ test.fail('UI-13 booking dates that are already taken says so and leaves the pag
   const reservation = new ReservationPage(page);
   await reservation.goto(room.roomid, dates);
   await reservation.book(GUEST);
-  await expect(page.getByRole('alert').filter({ hasText: /\S/ }), 'a message about the dates').toBeVisible();
-  await expect(reservation.reserve, 'the booking form, still there').toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: /\S/ }), 'a message about the dates (#2)').toBeVisible();
+  await expect(reservation.reserve, 'the booking form, still there (#2)').toBeVisible();
 });
 
 test('UI-14 Cancel closes the guest form without booking', { tag: '@ui' }, async ({ page, visitor, room }) => {

@@ -32,14 +32,14 @@ test.fail("UI-18 each room's photo is described as its own room", { tag: ['@ui',
   await home.goto();
   for (const id of await home.shownRoomIds()) {
     const room = await read(await visitor.room(id), Room);
-    await expect(home.roomCard(id).getByRole('img'), `room ${id}`).toHaveAccessibleName(new RegExp(room.type));
+    await expect(home.roomCard(id).getByRole('img'), `room ${id} (#5)`).toHaveAccessibleName(new RegExp(room.type));
   }
 });
 
 test.fail('UI-17 a newly added room appears on the home page', { tag: ['@ui', '@known-bug'], annotation: issue(13) }, async ({ page, room }) => {
   const home = new HomePage(page);
   await home.goto();
-  await expect(home.bookLink(room.roomid)).toBeVisible();
+  await expect(home.bookLink(room.roomid), 'the new room on the home page (#13)').toBeVisible();
 });
 
 const SECTIONS = [
@@ -63,7 +63,7 @@ test.fail('UI-04 the menu link Amenities goes to an amenities section', { tag: [
   const home = new HomePage(page);
   await home.goto();
   await home.menu.getByRole('link', { name: 'Amenities' }).click();
-  await expect(page.locator('#amenities')).toBeInViewport();
+  await expect(page.locator('#amenities'), 'the amenities section (#3)').toBeInViewport();
 });
 
 test('UI-05 at phone width the menu opens from its button and shows the same links', { tag: '@ui' }, async ({ page }) => {
@@ -94,7 +94,7 @@ test.fail("UI-15 the footer's quick links go to their pages or sections", { tag:
   const home = new HomePage(page);
   await home.goto();
   for (const name of ['Home', 'Rooms', 'Booking', 'Contact']) {
-    await expect(home.footer.getByRole('link', { name, exact: true })).not.toHaveAttribute('href', '#');
+    await expect(home.footer.getByRole('link', { name, exact: true }), `the footer link ${name} (#6)`).not.toHaveAttribute('href', '#');
   }
 });
 
@@ -104,5 +104,5 @@ test.fail('UI-16 every page has its own title', { tag: ['@ui', '@known-bug'], an
     await page.goto(path);
     titles.add(await page.title());
   }
-  expect(titles.size, [...titles].join(' | ')).toBe(4);
+  expect(titles.size, `${[...titles].join(' | ')} (#9)`).toBe(4);
 });

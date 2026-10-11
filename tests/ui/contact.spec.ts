@@ -44,5 +44,5 @@ test.fail("UI-09 the form's errors are announced to screen-reader users", { tag:
   await home.contactForm.getByRole('button', { name: 'Submit' }).click();
   // Announced means inside a live region: role="alert" or an aria-live area.
   const announced = page.locator('[role="alert"], [aria-live="polite"], [aria-live="assertive"]');
-  await expect(announced.getByText('Name may not be blank', { exact: true })).toBeVisible();
+  await expect(announced.getByText('Name may not be blank', { exact: true }), 'the error, announced (#14)').toBeVisible();
 });

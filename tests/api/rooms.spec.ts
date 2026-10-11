@@ -24,5 +24,5 @@ test('API-02 the branding matches its schema', { tag: '@api' }, async ({ visitor
 });
 
 test.fail("API-12 a room that doesn't exist answers 404", { tag: ['@api', '@known-bug'], annotation: issue(21) }, async ({ visitor }) => {
-  expect((await visitor.room(999_999)).status()).toBe(404);
+  expect((await visitor.room(999_999)).status(), 'a room that does not exist (#21)').toBe(404);
 });

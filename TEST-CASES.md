@@ -4,6 +4,10 @@
 our own copy that day; the admin cases and the two API cases marked *added* come from that
 exploration and follow the outline the owner approved.
 
+As the history shows: this list was first committed as a draft for approval (e4382dc), and its
+status line still read "draft" when the suite was first committed (38708fe); the line above and
+the admin cases were added in the next commit (bb5b54e).
+
 Everything below was observed in Restful-Booker-Platform (RBP) 2.2, running on our own copy in
 CI, on 2026-10-04. The records are in [docs/exploration/2026-10-04](docs/exploration/2026-10-04).
 
@@ -119,11 +123,12 @@ From PLAN.md, "Flagship scope".
 
 | ID | Check | Runs |
 |---|---|---|
-| GATE-01 | The release gate gives each area its own verdict, and merging needs it ([DECISIONS.md](DECISIONS.md), decision 5). A pull request's gate requires the API, home page, contact form, booking and admin area; the nightly gate adds accessibility | PR |
+| GATE-01 | The release gate gives each area its own verdict, and merging needs it ([DECISIONS.md](DECISIONS.md), decision 5). A pull request's gate requires the API, home page, contact form, booking and admin area; the nightly gate adds accessibility. A known bug counts only when its test fails on the check that names its issue, and a known bug's test that times out is named, not taken as fixed | PR |
 | SIG-01 | Every test file is collected by the runner: no test file that never runs | PR |
 | SIG-02 | Lint catches tests that cannot fail, such as a test with no assertion | PR |
 | SIG-03 | The numbers in the README (test counts) are generated, and CI fails when they are out of date | PR |
 | SIG-04 | This list says what the tests do: every test has an ID and a row, no ID names a check together with its known bug, Runs and Tags match the code, each finding names the tests that link its issue, and every test case is under a risk in STRATEGY.md | PR |
+| SIG-05 | The site-settings guard puts back branding a test left changed, leaves unchanged branding alone, and fails, naming itself, when it can't; inside a known bug's test, the gate doesn't take that failure for the bug | PR |
 
 Not built yet: LOAD-01, an optional short k6 smoke test of the room and booking APIs, written from
 scratch, to run nightly.
