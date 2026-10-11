@@ -2,8 +2,12 @@ import { read } from '../../src/api/client.ts';
 import { Branding, Room } from '../../src/api/schemas.ts';
 import { issue } from '../../src/config.ts';
 import { day, farStay, GUEST } from '../../src/data.ts';
+import { keepKnownBugScreenshot } from '../../src/evidence.ts';
 import { expect, test } from '../../src/fixtures.ts';
 import { HomePage } from '../../src/pages/home.ts';
+
+// Each known bug as it looks, kept in every run's report (src/evidence.ts).
+test.afterEach(keepKnownBugScreenshot);
 
 test("UI-01 the home page shows the B&B's name, description and contact details", { tag: ['@ui', '@smoke'] }, async ({ page, visitor }) => {
   const branding = await read(await visitor.branding(), Branding);

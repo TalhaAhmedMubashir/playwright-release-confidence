@@ -17,7 +17,10 @@ owner's permission (2026-10-04); both scripts refuse any address but this machin
 `<password>` and `<token>` wherever the password or the sign-in token appeared.
 
 Screenshots, and a Playwright trace of the visitor passes, were kept as each run's artifact for 30
-days; the text records are here. The admin ones are the run's JSON files written out as Markdown.
+days; the text records are here. The two screenshots that show a defect are kept in
+[screenshots/](screenshots): the booking page's errors that don't name their field (issue #7), and
+the error screen after booking taken dates (issue #2). Since 11 Oct 2026 every run's report also
+keeps a screenshot of each known bug (`src/evidence.ts`). The admin ones are the run's JSON files written out as Markdown.
 Booking pages are named after their room (`reservation-1` is room 1); the dates in their addresses
 were tonight and tomorrow.
 

@@ -2,11 +2,15 @@ import { read } from '../../src/api/client.ts';
 import { Messages } from '../../src/api/schemas.ts';
 import { ADMIN, ADMIN_STATE, BASE_URL, issue } from '../../src/config.ts';
 import { GUEST, MESSAGE, ROOM_PREFIX, stay, uniqueName } from '../../src/data.ts';
+import { keepKnownBugScreenshot } from '../../src/evidence.ts';
 import { deleteRoomsNamed, expect, findRoom, test } from '../../src/fixtures.ts';
 import { changingSiteSettings } from '../../src/guard.ts';
 import { AdminPage } from '../../src/pages/admin.ts';
 import { HomePage } from '../../src/pages/home.ts';
 import { ReservationPage } from '../../src/pages/reservation.ts';
+
+// Each known bug as it looks, kept in every run's report (src/evidence.ts).
+test.afterEach(keepKnownBugScreenshot);
 
 test.describe('signing in and out', () => {
   // A fresh session each: signing out must never end the session the other admin tests share.

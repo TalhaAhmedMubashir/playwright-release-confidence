@@ -2,8 +2,12 @@ import { read } from '../../src/api/client.ts';
 import { Report, Rooms } from '../../src/api/schemas.ts';
 import { issue } from '../../src/config.ts';
 import { GUEST, ROOM_PREFIX, stay } from '../../src/data.ts';
+import { keepKnownBugScreenshot } from '../../src/evidence.ts';
 import { expect, test } from '../../src/fixtures.ts';
 import { ReservationPage } from '../../src/pages/reservation.ts';
+
+// Each known bug as it looks, kept in every run's report (src/evidence.ts).
+test.afterEach(keepKnownBugScreenshot);
 
 // What the guest form showed when sent empty while exploring (flows.md, step 7): seven messages,
 // "must not be empty" twice.
