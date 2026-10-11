@@ -39,7 +39,7 @@ const shapeOf = async (response: Awaited<ReturnType<Api['get']>>) => {
 
 test.fail('API-13 every refusal answers with the same status and the same shape', { tag: ['@api', '@known-bug'], annotation: issue(8) }, async ({ visitor }) => {
   const answers = [await visitor.get('/booking'), await visitor.get('/booking/1'), await visitor.get('/report'), await visitor.post('/room', {})];
-  expect(new Set(await Promise.all(answers.map(shapeOf)))).toHaveProperty('size', 1);
+  expect(new Set(await Promise.all(answers.map(shapeOf))), 'every refusal answers the same way (#8)').toHaveProperty('size', 1);
 });
 
 test.fail("API-10 an error answer doesn't reveal the app's internal code", { tag: ['@api', '@security', '@known-bug'], annotation: issue(12) }, async ({ admin }) => {
@@ -47,6 +47,6 @@ test.fail("API-10 an error answer doesn't reveal the app's internal code", { tag
     const current = await read(await admin.branding(), Branding);
     const response = await admin.updateBranding({ ...current, logoUrl: 'not a web address' });
     expect(response.status()).toBe(400);
-    expect(await response.text()).not.toMatch(/com\.automationintesting|java\.|springframework|Exception/);
+    expect(await response.text(), "the error answer doesn't show the app's code (#12)").not.toMatch(/com\.automationintesting|java\.|springframework|Exception/);
   });
 });

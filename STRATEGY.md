@@ -60,9 +60,11 @@ against the same app. If it goes red, the cause is one of these four, never a ch
 ## Data and safety
 
 - The app runs on this machine only; any other address stops the run (`src/config.ts`).
-- Each test makes the data it needs through the API and deletes it by name.
+- Each test that books makes a room of its own through the API and deletes it by name. The
+  messages and bookings tests send stay in the throwaway copy of the app each CI job starts.
 - A test that changes what every visitor sees runs only with `ALLOW_SITE_SETTINGS_CHANGES=1`, and
-  the guard fails it if the site isn't left as it was (`src/guard.ts`).
+  the guard fails it if the site isn't left as it was (`src/guard.ts`); self-tests prove the guard
+  can put the branding back and can fail (SIG-05).
 - Signing in uses the app's published default login, on our own copy only.
 
 ## What a result means
@@ -70,7 +72,9 @@ against the same app. If it goes red, the cause is one of these four, never a ch
 - **A failed test** fails its area in the release gate, and the change doesn't merge.
 - **A known bug** is a test marked as expected to fail, linked to its issue. While the bug is
   there, the area still passes; the day it's fixed, the test passes, the gate fails, and the mark
-  comes off.
+  comes off. The check that shows the bug names its issue, and the gate counts the bug only when
+  the test fails on that check: a failure anywhere else, such as a broken control check, a
+  fixture or the guard, fails the area.
 - **A skipped test** counts as not passed, and **an area where nothing ran** fails: silence is not
   success.
 - **A flaky test is a failure:** it gets fixed, not retried. Retries are off, so no run turns green

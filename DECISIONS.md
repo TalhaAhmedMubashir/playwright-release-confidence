@@ -74,6 +74,10 @@ and a clash would look like a booking bug.
 **Why:** fixed dates, no clashes between tests running in parallel, and clean-up that finds exactly
 what a test made, even after a failure.
 
+**One exception:** UI-06 books one of the app's own rooms, because a room added later never shows
+on the home page (issue #13). Its booking, like the messages tests send, stays in the throwaway
+copy of the app that each CI job starts.
+
 ## 5. A release gate per area, every mark at 100% (2026-10-04)
 
 **Choice:** the gate gives each area (API, home page, contact form, booking, admin area,

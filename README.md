@@ -17,15 +17,16 @@ whether a build may ship.
 | Contact form | 3 | 1 | chromium, firefox, webkit |
 | Home page | 10 | 5 | chromium, firefox, webkit |
 | Accessibility | 3 | 0 | a11y |
-| Honest signals | 19 | 0 | meta |
-| **All** | **95** | **18** | 155 runs across projects |
+| Honest signals | 26 | 0 | meta |
+| **All** | **102** | **18** | 162 runs across projects |
 <!-- numbers:end -->
 
-The full list, with the reason for each test: [TEST-CASES.md](TEST-CASES.md). A known bug is a real
-defect found while exploring the app. Its test checks for the right behaviour and is marked as
+The full list, with the reason for each test: [TEST-CASES.md](TEST-CASES.md). A known bug is a
+defect found while testing the app. Its test checks for the right behaviour and is marked as
 expected to fail, with a link to its
-[issue](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/issues?q=label%3Aknown-bug):
-the suite stays green while the bug is visible, and the gate turns red the day it is fixed.
+[issue](https://github.com/TalhaAhmedMubashir/playwright-release-confidence/issues?q=label%3Aknown-bug),
+and the check that shows the bug names the issue: the gate counts the bug only when the test fails
+on that check. The gate passes while the bug is visible, and fails the day it is fixed.
 
 ## How it works
 
@@ -33,10 +34,12 @@ the suite stays green while the bug is visible, and the gate turns red the day i
   in about 1.5 minutes ([DECISIONS.md](DECISIONS.md), decision 1).
 - **Selectors** come only from what exploring the app recorded
   ([docs/exploration](docs/exploration)), never from guesses.
-- **Test data** is made through the API for each test and deleted by name afterwards: each test
-  that books gets a room of its own, so tests never collide and can run in parallel.
+- **Test data:** each test that books makes a room of its own through the API and deletes it by
+  name afterwards, so tests never collide and can run in parallel. The messages and bookings tests
+  send stay in the throwaway copy of the app that each CI job starts.
 - **The guard:** a test that changes what every visitor sees runs only with
-  `ALLOW_SITE_SETTINGS_CHANGES=1`, and must leave the site as it found it (`src/guard.ts`).
+  `ALLOW_SITE_SETTINGS_CHANGES=1`, and must leave the site as it found it (`src/guard.ts`);
+  self-tests prove the guard puts the branding back and fails when it can't (SIG-05).
 - **Honest signals:** lint stops tests that can't fail; CI fails if a test file is never
   collected, if the numbers above stop matching the tests, or if [TEST-CASES.md](TEST-CASES.md)
   does; and self-tests prove each of these checks can fail.
@@ -55,8 +58,10 @@ Needs Docker with the compose plugin, and Node 24.
 npm ci
 npx playwright install --with-deps
 npm run app:start        # pulls and starts the app, then waits until every service answers
-npm test                 # the full suite, as at night
-npm run test:pr          # what a pull request runs
+# The flag lets the two tests that change the site's settings run (CI sets it too); without it
+# they skip, and the gate fails their areas, since a skipped test is not a passed one.
+ALLOW_SITE_SETTINGS_CHANGES=1 npm test         # the full suite, as at night
+ALLOW_SITE_SETTINGS_CHANGES=1 npm run test:pr  # what a pull request runs
 npm run gate             # the release gate's verdict on the last run
 npm run app:stop
 ```

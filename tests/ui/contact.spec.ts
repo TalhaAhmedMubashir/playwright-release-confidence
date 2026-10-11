@@ -2,8 +2,12 @@ import { read } from '../../src/api/client.ts';
 import { Message, Messages } from '../../src/api/schemas.ts';
 import { issue } from '../../src/config.ts';
 import { MESSAGE, uniqueName } from '../../src/data.ts';
+import { keepKnownBugScreenshot } from '../../src/evidence.ts';
 import { expect, test } from '../../src/fixtures.ts';
 import { HomePage } from '../../src/pages/home.ts';
+
+// Each known bug as it looks, kept in every run's report (src/evidence.ts).
+test.afterEach(keepKnownBugScreenshot);
 
 // What the form showed when sent empty while exploring (docs/exploration/2026-10-04/flows.md, step 2).
 const EMPTY_FORM_ERRORS = [
@@ -44,5 +48,5 @@ test.fail("UI-09 the form's errors are announced to screen-reader users", { tag:
   await home.contactForm.getByRole('button', { name: 'Submit' }).click();
   // Announced means inside a live region: role="alert" or an aria-live area.
   const announced = page.locator('[role="alert"], [aria-live="polite"], [aria-live="assertive"]');
-  await expect(announced.getByText('Name may not be blank', { exact: true })).toBeVisible();
+  await expect(announced.getByText('Name may not be blank', { exact: true }), 'the error, announced (#14)').toBeVisible();
 });

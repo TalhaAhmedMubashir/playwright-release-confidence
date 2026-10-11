@@ -84,6 +84,6 @@ test("API-07 a new booking's dates show as taken in the availability and report 
 
 test.fail('API-11 creating a booking answers as the API description says', { tag: ['@api', '@known-bug'], annotation: issue(11) }, async ({ visitor, room }) => {
   const response = await visitor.createBooking(booking(room.roomid));
-  expect(response.status(), 'the status the description gives').toBe(200);
-  expect((await read(response, DocumentedCreatedBooking)).booking.roomid).toBe(room.roomid);
+  expect(response.status(), 'the status the description gives (#11)').toBe(200);
+  expect((await read(response, DocumentedCreatedBooking)).booking.roomid, 'the booking the description gives (#11)').toBe(room.roomid);
 });
