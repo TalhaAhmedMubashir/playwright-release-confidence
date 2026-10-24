@@ -28,14 +28,50 @@ const KNOWN: { rule: string; finding: RegExp; scope: 'visitor' | 'admin'; issue:
   { rule: 'select-name', finding: /^admin rooms: select-name #(type|accessible)$/, scope: 'admin', issue: 20 },
 ];
 
-/** Every WCAG 2.2 AA problem axe finds on the page as it is now, as "where: rule element". */
+/** Why axe flagged each finding, in its own words, so a finding nobody knows yet says what it saw. */
+const why = new Map<string, string>();
+
+/**
+ * Waits until the page has stopped scrolling: ten animation frames in a row at the same position.
+ * After a booking the page went on scrolling for up to 0.7 s (runs 40101654586 and 40102204982,
+ * 24 Oct 2026), and a scan made meanwhile sees each element wherever it is passing at that moment.
+ * The nightly runs of 16 and 23 Oct failed on a target-size finding there that 80 later scans of a
+ * still page never found.
+ */
+async function still(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        let last = window.scrollY;
+        let frames = 0;
+        const watch = () => {
+          frames = window.scrollY === last ? frames + 1 : 0;
+          last = window.scrollY;
+          if (frames >= 10) resolve();
+          else requestAnimationFrame(watch);
+        };
+        requestAnimationFrame(watch);
+      }),
+  );
+}
+
+/** Every WCAG 2.2 AA problem axe finds on the page once it has stopped scrolling, as "where: rule element". */
 async function scan(page: Page, where: string): Promise<string[]> {
+  await still(page);
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-  return violations.flatMap((violation) => violation.nodes.map((node) => `${where}: ${violation.id} ${node.target.join(' ')}`));
+  return violations.flatMap((violation) =>
+    violation.nodes.map((node) => {
+      const finding = `${where}: ${violation.id} ${node.target.join(' ')}`;
+      why.set(finding, node.failureSummary?.replace(/\s+/g, ' ').trim() ?? '');
+      return finding;
+    }),
+  );
 }
 
 const covers = (known: (typeof KNOWN)[number], finding: string) => finding.includes(`: ${known.rule} `) && known.finding.test(finding);
 const isKnown = (finding: string) => KNOWN.some((known) => covers(known, finding));
+/** Findings nobody knows yet, each with axe's reason for it. */
+const unknown = (found: string[]) => found.filter((finding) => !isKnown(finding)).map((finding) => `${finding} (${why.get(finding)})`);
 /** Known problems of this part of the app that the scans no longer find. */
 const noLongerFound = (scope: 'visitor' | 'admin', found: string[]) =>
   KNOWN.filter((known) => known.scope === scope && !found.some((finding) => covers(known, finding))).map((known) => `#${known.issue} ${known.rule} ${known.finding}`);
@@ -76,7 +112,7 @@ async function scanVisitorPages(page: Page, roomId: number): Promise<string[]> {
 
 test('A11Y-01 the visitor pages have no accessibility problem beyond the known ones', { tag: '@a11y', annotation: [issue(4), issue(19)] }, async ({ page, room }) => {
   const found = await scanVisitorPages(page, room.roomid);
-  expect.soft(found.filter((finding) => !isKnown(finding)), 'problems not known yet').toEqual([]);
+  expect.soft(unknown(found), 'problems not known yet').toEqual([]);
   expect(noLongerFound('visitor', found), 'known problems no longer found: close their issues and remove them from KNOWN').toEqual([]);
 });
 
@@ -101,7 +137,7 @@ test.describe('signed in', () => {
       await (await answered).finished();
       found.push(...(await scan(page, where)));
     }
-    expect.soft(found.filter((finding) => !isKnown(finding)), 'problems not known yet').toEqual([]);
+    expect.soft(unknown(found), 'problems not known yet').toEqual([]);
     expect(noLongerFound('admin', found), 'known problems no longer found: close their issues and remove them from KNOWN').toEqual([]);
   });
 });
